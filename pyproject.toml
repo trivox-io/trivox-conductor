@@ -1,0 +1,169 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "trivox-conductor"
+version = "1.0.0"
+description = "Inpection tool for ICTools"
+authors = [
+    {name="Santiago Rincon", email="rincores@gmail.io"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9,<3.12"
+dependencies = [
+    "PyYAML~=6.0",
+    "PySide6~=6.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "semver~=3.0",
+    "anybadge~=1.16",
+    "pytest~=8.3",
+    "pytest-cov~=6.0",
+    "pytest-mock~=3.14",
+    "sonar-tools~=3.7",
+    "pylint~=3.3",
+    "black~=24.10",
+    "mypy~=1.5",
+    "types-pyyaml~=6.0",
+    "coverage~=7.6",
+    "isort~=5.13",
+    "pytest-qt~=4.4",
+    "pytest-asyncio~=0.26",
+]
+
+docs = [
+    "furo~=2024.8",
+    "myst-parser~=3.0",
+    "sphinx~=7.0",
+    "sphinx-autoapi~=3.4",
+    "sphinx-autobuild~=2024.10",
+    "sphinx-copybutton~=0.5",
+    "sphinx-design~=0.6",
+    "sphinx-inline-tabs~=2023.4"
+]
+
+[project.scripts]
+trivox-conductor = "trivox_conductor.cli:main"
+
+[tool.black]
+line-length = 79
+force-exclude = '''(
+.+/compiled/.+
+|^.venv
+|^venv
+|^virtualenv
+|^.virtualenv
+|^env
+|^.env
+|^pyenv
+|^.pyenv
+|^pyvenv
+|^pyvenv
+|^docs)
+'''
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.run]
+branch=true
+include=["manage.py", "src/*", "tests/__init__.py"]
+command_line = "-m pytest"
+relative_files = true
+omit = [
+    # Cover all the python environment matches.
+    "^.venv",
+    "^venv",
+    "^virtualenv",
+    "^.virtualenv",
+    "^env",
+    "^.env",
+    "^pyenv",
+    "^.pyenv",
+    "^pyvenv",
+    "^pyvenv",
+    "docs",
+    # Cover all the compiled QT files.
+    ".+\\compiled\\",
+]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.isort]
+profile = "black"
+
+[tool.poetry]
+packages= [{include = "trivox_conductor", from="src"}]
+
+[tool.pylint.messages_control]
+disable = [
+    # Justification (2 Lines): Disabling due to image issues being seen on the
+    # Test pipeline. False positive. To be checked after migrating image.
+    "import-error",
+    "no-name-in-module",
+    # Justification: Imports of embedded systems trigger false positive when
+    # only certain parts of the class is overriden. Use NotImplementedExceptions
+    # in the code if we wish to actually force this.
+    "too-few-public-methods",
+    # Justification: f-string optimization is neglegible for the use intended
+    # by this app.
+    "logging-fstring-interpolation",
+    # Justification: Disabling fixme because those warnings will be addressed during SOLID,
+    # KISS, and DRY refactoring.
+    "fixme",
+    # Justification: In some cases we get false positives with this error because
+    # wintreg is imported only on Windows. We need to disable this error
+    "possibly-used-before-assignment",
+    # Justification: There are several invalid-name errors in the code that are
+    # not relevant because they belong to third-party libraries. We need to disable this error
+    "invalid-name",
+    # Justification: Pylint can’t see members on native extension modules
+    # (e.g. servicemanager’s LogInfoMsg), so it flags false positives.
+    "c-extension-no-member",
+    # Justification: We adjust sys.path at runtime before importing project modules,
+    # so those imports must come after the sys.path.append call.
+    "wrong-import-position",
+]
+
+[tool.pylint.MAIN]
+ignore-paths = [
+    # Cover all the python environment matches.
+    "^.venv",
+    "^venv",
+    "^virtualenv",
+    "^.virtualenv",
+    "^env",
+    "^.env",
+    "^pyenv",
+    "^.pyenv",
+    "^pyvenv",
+    "^pyvenv",
+    "docs",
+    # Cover all the compiled QT files.
+    ".+\\compiled\\",
+]
+extension-pkg-allow-list = [
+    "PySide6",
+    "PySide6.QtWidgets",
+    "PySide6.QtCore",
+    "PySide6.QtGui"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-s -v --durations=0 --color=yes"
+cache_dir = ".cache/pytest_cache"
+pythonpath = ["."]
+markers = [
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+
+[tool.sonar]
+sources="src/"
+tests="tests/"
+exclusions="**/compiled/**,**/tests/**,**/docs/**"
