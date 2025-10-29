@@ -2,28 +2,27 @@
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
 from trivox_conductor.common.base_processor import TrivoxCaptureCommandProcessor
-from trivox_conductor.core.registry.mux_registry import MuxRegistry
+from trivox_conductor.core.registry.color_registry import ColorRegistry
 
-from .services import MuxService
+from .services import ColorService
 
 
-class MuxCommandProcessor(TrivoxCaptureCommandProcessor):
+class ColorCommandProcessor(TrivoxCaptureCommandProcessor):
     """
-    Command processor for Mux module commands.
+    Command processor for Color module commands.
     """
     
     def __init__(self, **kwargs):
         self._action: str = kwargs.get("action", "")
-        self._session_id: str = kwargs.get("session_id", None)
     
     def run(self):
         # Implement the command processing logic here
-        logger.debug("Running CaptureCommandProcessor")
+        logger.debug("Running ColorCommandProcessor")
 
-        svc = MuxService(MuxRegistry, settings)
+        svc = ColorService(ColorRegistry, settings)
 
         ops = {
-            "mux_clip": lambda: svc.mux_clip("", {}, None, self._session_id),
+            "color_pass": lambda: svc.color_pass(""),
         }
         try:
             fn = ops[self._action]
@@ -31,5 +30,5 @@ class MuxCommandProcessor(TrivoxCaptureCommandProcessor):
             raise ValueError(f"Unknown action: {self._action}") from e
 
         result = fn()
-        logger.info(f"mux.action - {self._action} - {self._session_id}")
+        logger.info(f"color.action - {self._action}")
         return result

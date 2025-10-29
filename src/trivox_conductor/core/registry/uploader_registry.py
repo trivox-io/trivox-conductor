@@ -1,15 +1,30 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Type
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 from trivox_conductor.core.contracts.uploader import UploaderAdapter
 
 class UploaderRegistry(EndpointRegistry[UploaderAdapter]):
     endpoint_base: type = UploaderAdapter
     _active: Optional[str] = None
+    _active_instance: Optional[UploaderAdapter] = None  # cache
+
     @classmethod
     def set_active(cls, name: str) -> None:
-        if name not in cls._registry: raise KeyError(f"Uploader '{name}' not registered.")
+        if name not in cls._registry:
+            raise KeyError(f"Capture adapter '{name}' not registered.")
         cls._active = name
+        cls._active_instance = None  # reset instance on change
+
+    @classmethod
+    def get_active_class(cls) -> Optional[Type[UploaderAdapter]]:
+        if cls._active is None:
+            return None
+        return cls._registry.get(cls._active)
+
     @classmethod
     def get_active(cls) -> Optional[UploaderAdapter]:
-        return cls._registry.get(cls._active) if cls._active else None
+        if cls._active is None:
+            return None
+        if cls._active_instance is None:
+            cls._active_instance = cls.instantiate(cls._active)  # from EndpointRegistry
+        return cls._active_instance
