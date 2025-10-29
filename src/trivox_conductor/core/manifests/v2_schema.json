@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Trivox Manifest v2",
+  "type": "object",
+  "allOf": [ { "$ref": "v1_schema.json" } ],
+  "properties": {
+    "version": { "const": 2 },
+    "ai": {
+      "type": "object",
+      "properties": {
+        "selected": {
+          "type": "object",
+          "properties": {
+            "hook": { "type": "string" },
+            "caption": { "type": "string" },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hook": { "type": "string" },
+              "caption": { "type": "string" },
+              "hashtags": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "music": {
+      "type": "object",
+      "properties": {
+        "features": { "type": "object" },
+        "beat_markers_ms": { "type": "array", "items": { "type": "integer" } }
+      }
+    }
+  }
+}

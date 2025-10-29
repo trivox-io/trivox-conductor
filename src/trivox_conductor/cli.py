@@ -1,7 +1,10 @@
 
+from __future__ import annotations
+
 from typing import Optional, Callable
 import sys
 import argparse
+
 from trivox_conductor.common.commands import BaseCLIApp, CLIConfig
 from trivox_conductor.app import initialize
 from trivox_conductor.ui import run_gui

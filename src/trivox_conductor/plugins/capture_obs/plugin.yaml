@@ -1,0 +1,9 @@
+name: capture_obs
+role: capture
+module: adapter
+class: OBSAdapter
+version: "0.1.0"
+requires_api: ">=1.0,<2.0"
+capabilities:
+  - scenes:list
+  - profiles:list
