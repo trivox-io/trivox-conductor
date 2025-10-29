@@ -1,3 +1,32 @@
+"""
+Adapter Core Contracts
+======================
+
+Common primitives for all adapters, regardless of role (capture, watcher, mux,
+uploader, etc.).
+
+Contents
+--------
+- ``AdapterHealth``: TypedDict for health checks.
+- ``AdapterMeta``: TypedDict describing identity and capabilities.
+- ``Adapter`` (ABC): Minimal lifecycle every adapter should honor:
+  ``configure(settings, secrets)``, optional ``start()/stop()``, and a
+  standardized ``health()`` probe.
+
+Guidelines
+----------
+- **Configuration**: Adapters are configured once via ``configure`` (inject all
+  non-sensitive settings + secrets). Avoid reading global state directly.
+- **Separation of concerns**: Keep external I/O within adapters; route selection
+  and orchestration to services/registries.
+- **Health**: ``health()`` should be inexpensive and never throw; return an
+  ``AdapterHealth`` dict explaining status for logs/UX.
+
+Extending
+---------
+Concrete roles (e.g., ``CaptureAdapter``) should subclass ``Adapter`` and define
+their own role-specific methods while preserving this common lifecycle.
+"""
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
@@ -69,4 +98,4 @@ class Adapter(ABC):
         :return: Health status of the adapter.
         :rtype: AdapterHealth
         """
-        return AdapterHealth(ok=True, message="ok")
+        raise NotImplementedError("health() not implemented for this adapter")

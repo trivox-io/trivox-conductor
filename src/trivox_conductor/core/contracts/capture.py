@@ -1,3 +1,27 @@
+"""
+Capture Role Contract
+=====================
+
+Defines the minimal interface for **capture** adapters (e.g., OBS, in-game,
+or virtual recorders). Implementations are responsible for *I/O* and system
+integration; higher-level orchestration lives in services.
+
+Required Capabilities
+---------------------
+- **Discovery**: ``list_scenes()``, ``list_profiles()``
+- **Selection**: ``select_scene(name)``, ``select_profile(name)``
+- **Lifecycle**: ``start_capture()``, ``stop_capture()``
+- **Status**: ``is_recording() -> bool``
+
+Notes
+-----
+- Implementations should be **idempotent** where practical (e.g., stopping when
+  already stopped).
+- Prefer raising ``RuntimeError`` with actionable messages rather than leaking
+  SDK-specific exceptions.
+- Keep network/process I/O inside the adapter; do not load global settings here—use
+  ``configure(settings, secrets)`` invoked by the calling service.
+"""
 
 from __future__ import annotations
 from typing import List
@@ -50,4 +74,12 @@ class CaptureAdapter(Adapter):
     def stop_capture(self):
         """
         Stop the capture process.
+        """
+    
+    def is_recording(self) -> bool:
+        """
+        Check if capture is currently active.
+        
+        :return: True if recording, False otherwise.
+        :rtype: bool
         """

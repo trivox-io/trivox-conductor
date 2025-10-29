@@ -1,3 +1,24 @@
+"""
+Capture Runtime State
+=====================
+
+Simple dataclass capturing minimal, process-agnostic state for a capture session.
+Used by the service together with :mod:`state_store` to persist across CLI runs.
+
+Fields
+------
+- ``session_id`` : str | None
+- ``scene`` : str | None
+- ``profile`` : str | None
+- ``is_recording`` : bool
+- ``started_ts`` : float | None
+- ``notes`` : List[str]
+
+Usage
+-----
+- ``start(session_id)`` marks the beginning of a session and stamps ``started_ts``.
+- ``stop()`` clears the recording flag; additional cleanup is handled by the service.
+"""
 
 from __future__ import annotations
 from dataclasses import dataclass, field
