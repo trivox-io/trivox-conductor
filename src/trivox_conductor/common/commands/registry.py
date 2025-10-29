@@ -1,8 +1,12 @@
+
 from __future__ import annotations
 
-from typing import Optional, Type, Mapping, MutableMapping, ClassVar
+from typing import Optional, Type, Mapping, MutableMapping, ClassVar, TYPE_CHECKING
 
 from trivox_conductor.common.registry import EndpointRegistry
+
+if TYPE_CHECKING:
+    from .base_command import BaseCommand
 
 
 class CommandRegistry(EndpointRegistry["BaseCommand"]):

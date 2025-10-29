@@ -1,0 +1,9 @@
+name: watcher_replay
+role: watcher
+module: adapter
+class: ReplayWatcherAdapter
+version: "0.1.0"
+requires_api: ">=1.0,<2.0"
+capabilities:
+  - stable_detection
+  - session_correlation

@@ -52,7 +52,6 @@ def coerce_type(t: Type[Union[str, int, float, bool]]) -> callable:
     :return: A callable that converts a string to the specified type.
     :rtype: callable
     """
-
     def _coerce_json(s):
         try:
             return json.loads(s)

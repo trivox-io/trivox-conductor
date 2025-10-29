@@ -20,7 +20,7 @@ class SettingsManager(ABC):
 
     _setting_path: Optional[str] = None
     _configuration_descriptor = (
-        f"{os.getenv('TRIVOX_CONFIG_PATH')}/"
+        f"{os.getenv('TRIVOX_CONFIG_PATH', os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '.trivox_conductor/settings'))}/"
     )
 
     def __init__(self):
@@ -54,7 +54,7 @@ class SettingsManager(ABC):
 
         return {
             module: SettingRegistry.get(module)().data
-            for module in SettingRegistry.list()
+            for module in SettingRegistry.names()
         }
 
     @abstractmethod
