@@ -128,13 +128,56 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         if overrides:
             cfg_dict.update(overrides)
         adapter = self._get_configured_adapter(overrides=cfg_dict)
+        # --- Preflight: collect failures and bail once, with a helpful message ---
+        failures: list[str] = []
 
+        # 1) OBS health
         ok, msg = self._preflight.check_obs_health(adapter)
         if not ok:
-            logger.error(f"capture.preflight_failed - {msg}")
-            raise RuntimeError(f"Preflight failed: {msg}")
-        logger.debug(f"capture.preflight_ok - {msg}")
+            failures.append(f"obs: {msg}")
+        else:
+            logger.debug(f"capture.preflight_ok - obs: {msg}")
 
+        # 2) Disk space (best effort). Resolve record dir:
+        #    priority: CLI override 'record_dir' -> adapter.get_record_directory() -> skip
+        record_dir: Optional[str] = None
+        if overrides and "record_dir" in overrides and overrides["record_dir"]:
+            record_dir = str(overrides["record_dir"])
+        else:
+            get_dir = getattr(adapter, "get_record_directory", None)
+            if callable(get_dir):
+                try:
+                    record_dir = get_dir()  # expect a str
+                except Exception as e:
+                    logger.debug(f"capture.preflight_warn - get_record_directory failed: {e}")
+
+        if record_dir:
+            min_gb = float(cfg_dict.get("min_record_free_gb", 5.0))
+            ok, msg = self._preflight.check_disk_space(record_dir, min_gb=min_gb)
+            if not ok:
+                failures.append(f"disk: {msg}")
+            else:
+                logger.debug(f"capture.preflight_ok - disk: {msg}")
+        else:
+            logger.debug("capture.preflight_skip - disk: record directory unknown (override 'record_dir' to enable check)")
+
+        # 3) Minecraft foreground (optional strictness; default False)
+        enforce_mc_fg = bool(cfg_dict.get("enforce_mc_foreground", False))
+        if enforce_mc_fg:
+            ok, msg = self._preflight.check_minecraft_foreground()
+            if not ok:
+                failures.append(f"minecraft: {msg}")
+            else:
+                logger.debug(f"capture.preflight_ok - minecraft: {msg}")
+        else:
+            logger.debug("capture.preflight_skip - minecraft: enforcement disabled")
+
+        if failures:
+            error_msg = "Preflight failed: " + "; ".join(failures)
+            logger.error(f"capture.preflight_failed - {error_msg}")
+            raise RuntimeError(error_msg)
+
+        # --- Safe to proceed: select scene/profile, then start ---
         try:
             chosen_scene = scene or self._settings.default_scene
             if chosen_scene:
