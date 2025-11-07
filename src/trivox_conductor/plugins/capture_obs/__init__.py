@@ -60,5 +60,6 @@ Exports
 """
 
 from .adapter import OBSAdapter
+from .preflights import ObsHealthCheck
 
-__all__ = ["OBSAdapter"]
+__all__ = ["OBSAdapter", "ObsHealthCheck"]

@@ -33,47 +33,54 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     """
     Command processor for Capture module commands.
     """
+
+    SERVICE_CLS = CaptureService
+    ACTION_MAP = {
+        "start": "start",
+        "stop": "stop",
+        "list_scenes": "list_scenes",
+        "list_profiles": "list_profiles",
+    }
     
     def __init__(self, **kwargs):
-        self._action: str = kwargs.get("action", "")
-        self._session_id: str = kwargs.get("session_id", None)
+        super().__init__(**kwargs)
+        self._action: str = self._kwargs.get("action", "")
 
         # Optional selections
-        self._scene = kwargs.get("scene")
-        self._profile = kwargs.get("profile")
+        self._session_id: str = self._kwargs.get("session_id", None)
+        self._scene = self._kwargs.get("scene")
+        self._profile = self._kwargs.get("profile")
 
         # Connection overrides (only include if provided)
-        self._overrides = {
+        overrides = {
             k: v for k, v in {
-                "host": kwargs.get("host"),
-                "port": kwargs.get("port"),
-                "password": kwargs.get("password"),
-                "request_timeout_sec": kwargs.get("request_timeout_sec"),
+                "host": self._kwargs.get("host"),
+                "port": self._kwargs.get("port"),
+                "password": self._kwargs.get("password"),
+                "request_timeout_sec": self._kwargs.get("request_timeout_sec"),
             }.items() if v is not None
         }
+        self.set_pipeline_profile(overrides)
+
+    def build_service(self):
+        return CaptureService(CaptureRegistry, settings)
+
+    def build_call_kwargs(self, action: str) -> dict:
+        if action == "start":
+            return {
+                "session_id": self._session_id,
+                "scene": self._scene,
+                "profile": self._profile,
+                "overrides": self._overrides,
+                "pipeline_profile": self._pipeline_profile,
+            }
+        if action == "stop":
+            return {"overrides": self._overrides}
+        if action in ("list_scenes", "list_profiles"):
+            return {"overrides": self._overrides}
+        return {}
     
     def run(self):
         # Implement the command processing logic here
         logger.debug("Running CaptureCommandProcessor")
-
-        svc = CaptureService(CaptureRegistry, settings)
-
-        ops = {
-            "start": lambda: svc.start(
-                self._session_id,
-                scene=self._scene,
-                profile=self._profile,
-                overrides=self._overrides
-            ),
-            "stop": lambda: svc.stop(overrides=self._overrides),
-            "list_scenes": lambda: svc.list_scenes(overrides=self._overrides),
-            "list_profiles": lambda: svc.list_profiles(overrides=self._overrides),
-        }
-        try:
-            fn = ops[self._action]
-        except KeyError as e:
-            raise ValueError(f"Unknown action: {self._action}") from e
-
-        result = fn()
-        logger.info(f"capture.action - {self._action} - {result}")
-        return result
+        return super().run()

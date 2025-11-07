@@ -58,6 +58,7 @@ from trivox_conductor.core.events import topics
 
 logger = logging.getLogger(__name__)
 
+
 class OBSAdapter(CaptureAdapter):
     """
     Capture adapter for OBS (Open Broadcaster Software).

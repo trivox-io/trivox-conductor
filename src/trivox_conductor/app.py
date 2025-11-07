@@ -1,37 +1,70 @@
+"""
+Main application entry point for Trivox Conductor.
+"""
 
 import os
-from trivox_conductor.core.registry.base_loader import load_descriptors, import_adapter_from_descriptor
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
-from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
-    # ... set others
+from typing import Optional
 
-from trivox_conductor.common.module_loader import load_all_modules
-from trivox_conductor.common.logging import setup_logging
 from trivox_conductor.common.logger import logger
+from trivox_conductor.common.logging import setup_logging
+from trivox_conductor.common.module_loader import load_all_modules
+from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.core.registry.base_loader import (
+    import_adapter_from_descriptor,
+    load_descriptors,
+)
+from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 
-# ... import other registries
+# TODO: Make this registry dynamic based on available roles
+# central mapping: plugin role -> registry
+ROLE_REGISTRIES = {
+    "capture": CaptureRegistry,
+    # "watcher": WatcherRegistry,
+    # "mux": MuxRegistry,
+    # "color": ColorRegistry,
+    # "uploader": UploaderRegistry,
+    # "notifier": NotifierRegistry,
+    # "ai": AIRegistry,
+}
 
-def load_local_plugins(pkg_root="trivox_conductor"):
+
+def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
+    """
+    Discover local plugins from the 'plugins' directory and register them
+    into role-specific registries, based on plugin.yaml descriptors.
+
+    This only registers implementations; it does NOT choose which adapter
+    is 'active' for any role. That decision is made later by profiles or
+    explicit CLI/GUI actions.
+    """
     plugins_root = os.path.join(os.path.dirname(__file__), "plugins")
-    descs = load_descriptors(os.path.abspath(plugins_root))
-    logger.debug(f"Plugin descriptors loaded: {descs}")
-    for d in descs:
-        clazz = import_adapter_from_descriptor(d, pkg_root=pkg_root)
+    descriptors = load_descriptors(os.path.abspath(plugins_root))
+    logger.debug(f"Plugin descriptors loaded: {descriptors}")
+
+    for descriptor in descriptors:
+        clazz = import_adapter_from_descriptor(descriptor, pkg_root=pkg_root)
         name = clazz.__name__.lower()
 
-        # Register into the right registry (name + class!)
-        if d.role == "capture":
-            CaptureRegistry.register(name, clazz)
-        elif d.role == "watcher":
-            WatcherRegistry.register(name, clazz)
-        # TODO: add mux/color/uploader/notifier/ai when you add their plugins
+        registry: EndpointRegistry = ROLE_REGISTRIES.get(descriptor.role)
+        if not registry:
+            logger.warning(
+                "Unknown plugin role '%s' for %s", descriptor.role, descriptor
+            )
+            continue
 
-    # choose actives (from settings)
-    CaptureRegistry.set_active("obsadapter")        # class name lower() by default
-    WatcherRegistry.set_active("replaywatcheradapter")
+        registry.register(name, clazz)
+
+    logger.info("Local plugins loaded and registered.")
 
 
 def initialize():
+    """
+    Initialize the Trivox Conductor application.
+
+    - Setup logging with appropriate overrides.
+    - Load all modules to register commands, settings, and strategies.
+    - Load local plugins from the 'plugins' directory.
+    """
     setup_logging(
         overrides={
             "handlers": {
@@ -52,6 +85,7 @@ def initialize():
     load_all_modules()
     load_local_plugins()
     logger.info("Trivox Conductor application started.")
+
 
 if __name__ == "__main__":
     initialize()

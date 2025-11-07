@@ -41,6 +41,8 @@ from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.services.base_service import BaseService
+from trivox_conductor.core.preflights.preflight_engine import run_preflights
+from trivox_conductor.core.profiles.profile_models import PipelineProfile
 
 from .settings import CaptureSettingsModel
 from .state import CaptureState
@@ -102,7 +104,7 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         return adapter.list_profiles() if adapter else []
 
     # ----- Commands -----
-    def start(self, session_id: str, *, scene: Optional[str] = None, profile: Optional[str] = None, overrides: Optional[Mapping[str, Any]] = None):
+    def start(self, session_id: str, *, scene: Optional[str] = None, profile: Optional[str] = None, overrides: Optional[Mapping[str, Any]] = None,  pipeline_profile: Optional[PipelineProfile] = None,):
         """
         Start the capture process using the active adapter.
         
@@ -114,6 +116,9 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         
         :param profile: Optional profile name to select before starting.
         :type profile: Optional[str]
+        
+        :param overrides: Optional mapping of connection overrides.
+        :type overrides: Optional[Mapping[str, Any]]
         
         :raises RuntimeError: If preflight checks fail or no adapter is configured.
         """
@@ -129,53 +134,25 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             cfg_dict.update(overrides)
         adapter = self._get_configured_adapter(overrides=cfg_dict)
         # --- Preflight: collect failures and bail once, with a helpful message ---
-        failures: list[str] = []
+        failures =  run_preflights(
+            role="capture",
+            profile=pipeline_profile,
+            adapter=adapter,
+            base_settings=cfg_dict,
+            session_id=session_id,
+        )
 
-        # 1) OBS health
-        ok, msg = self._preflight.check_obs_health(adapter)
-        if not ok:
-            failures.append(f"obs: {msg}")
-        else:
-            logger.debug(f"capture.preflight_ok - obs: {msg}")
+        required_failures = [f for f in failures if f.required]
+        soft_failures    = [f for f in failures if not f.required]
 
-        # 2) Disk space (best effort). Resolve record dir:
-        #    priority: CLI override 'record_dir' -> adapter.get_record_directory() -> skip
-        record_dir: Optional[str] = None
-        if overrides and "record_dir" in overrides and overrides["record_dir"]:
-            record_dir = str(overrides["record_dir"])
-        else:
-            get_dir = getattr(adapter, "get_record_directory", None)
-            if callable(get_dir):
-                try:
-                    record_dir = get_dir()  # expect a str
-                except Exception as e:
-                    logger.debug(f"capture.preflight_warn - get_record_directory failed: {e}")
+        if required_failures:
+            msg = "; ".join(f"{f.id}: {f.message}" for f in required_failures)
+            logger.error("capture.preflight_failed - %s", msg)
+            raise RuntimeError("Preflight failed: " + msg)
 
-        if record_dir:
-            min_gb = float(cfg_dict.get("min_record_free_gb", 5.0))
-            ok, msg = self._preflight.check_disk_space(record_dir, min_gb=min_gb)
-            if not ok:
-                failures.append(f"disk: {msg}")
-            else:
-                logger.debug(f"capture.preflight_ok - disk: {msg}")
-        else:
-            logger.debug("capture.preflight_skip - disk: record directory unknown (override 'record_dir' to enable check)")
+        for f in soft_failures:
+            logger.warning("capture.preflight_soft_fail - %s: %s", f.id, f.message)
 
-        # 3) Minecraft foreground (optional strictness; default False)
-        enforce_mc_fg = bool(cfg_dict.get("enforce_mc_foreground", False))
-        if enforce_mc_fg:
-            ok, msg = self._preflight.check_minecraft_foreground()
-            if not ok:
-                failures.append(f"minecraft: {msg}")
-            else:
-                logger.debug(f"capture.preflight_ok - minecraft: {msg}")
-        else:
-            logger.debug("capture.preflight_skip - minecraft: enforcement disabled")
-
-        if failures:
-            error_msg = "Preflight failed: " + "; ".join(failures)
-            logger.error(f"capture.preflight_failed - {error_msg}")
-            raise RuntimeError(error_msg)
 
         # --- Safe to proceed: select scene/profile, then start ---
         try:

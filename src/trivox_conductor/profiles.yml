@@ -1,0 +1,27 @@
+profiles:
+  minecraft_obs_replay:
+    label: "Minecraft (OBS + ReplayMod)"
+
+    adapters:
+      capture:
+        name: "obsadapter"
+        overrides:
+          default_scene: "MC_Gameplay"
+          default_profile: "MC_1080p60"
+          enforce_mc_foreground: true
+          record_dir: "C:/Users/USUARIO/Videos"
+
+        preflights:
+          - id: "capture.disk_space"
+            required: true
+            params:
+              min_gb: 10
+              path_key: "record_dir"
+
+          - id: "capture.obs_health"
+            required: true
+
+          - id: "capture.window_foreground"
+            required: false
+            params:
+              window_title_contains: "Minecraft"

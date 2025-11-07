@@ -21,3 +21,11 @@ by the application bootstrap.
 
 from .commands import CaptureCommand
 from .settings import CaptureSettings
+from .preflights import DiskSpaceCheck, WindowForegroundCheck
+
+__all__ = [
+    "CaptureCommand",
+    "CaptureSettings",
+    "DiskSpaceCheck",
+    "WindowForegroundCheck",
+]

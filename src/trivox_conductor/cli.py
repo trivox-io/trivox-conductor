@@ -1,19 +1,27 @@
+"""
+CLI application for Trivox Conductor.
+"""
 
 from __future__ import annotations
 
-from typing import Optional, Callable
-import sys
 import argparse
+import sys
+from typing import Callable, Optional
 
-from trivox_conductor.common.commands import BaseCLIApp, CLIConfig
 from trivox_conductor.app import initialize
+from trivox_conductor.common.commands import BaseCLIApp, CLIConfig
 from trivox_conductor.ui import run_gui
 
 
 class TrivoxCLI(BaseCLIApp):
+    """
+    CLI application for Trivox Conductor.
+    """
 
     def __init__(
-        self, config: CLIConfig, gui_callback: Optional[Callable[[], None]] = None
+        self,
+        config: CLIConfig,
+        gui_callback: Optional[Callable[[], None]] = None,
     ):
         """
         :param gui_callback: The callback function to run the GUI application.
@@ -75,10 +83,11 @@ def main():
     - Load all modules to register commands, settings, and strategies.
     - Populate settings and setup the logger.
     - Parse the command line arguments.
+    - Run the specified command.
     """
 
     # Load all modules to register commands, settings, and strategies.
-    
+
     # Populate settings and setup the logger
     initialize()
     # Parse the command line arguments

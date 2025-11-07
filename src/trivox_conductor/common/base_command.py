@@ -1,4 +1,3 @@
-
 """
 Base ingest command Module
 This module defines the TrivoxConductorCommand class, which serves as a base for all
@@ -7,11 +6,12 @@ ic_ingest commands.
 
 from typing import List, Optional
 
-from trivox_conductor.common.commands.base_command import BaseCommand
-from trivox_conductor.common.commands.exceptions import CommandException
 from trivox_conductor.common.commands.argument_type import ArgumentType
-from trivox_conductor.common.commands.base_command_processor import BaseCommandProcessor
-
+from trivox_conductor.common.commands.base_command import BaseCommand
+from trivox_conductor.common.commands.base_command_processor import (
+    BaseCommandProcessor,
+)
+from trivox_conductor.common.commands.exceptions import CommandException
 from trivox_conductor.common.logger import logger
 
 
@@ -28,6 +28,12 @@ class TrivoxConductorCommand(BaseCommand):
             str,
             "Path to the configuration file.",
             required=False,
+        ),
+        ArgumentType(
+            "pipeline_profile",
+            str,
+            "Profile to select before start",
+            default=None,
         ),
     ]
 
