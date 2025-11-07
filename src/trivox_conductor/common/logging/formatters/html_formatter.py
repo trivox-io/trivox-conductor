@@ -31,6 +31,8 @@ class HTMLFormatter(logging.Formatter):
         super().__init__()
         self.fmt_keys = fmt_keys if fmt_keys is not None else {}
 
+    # Justification: Accessing protected member _style of class Formatter is necessary here
+    # pylint: disable=protected-access
     def format(self, record: logging.LogRecord) -> str:
         """
         Format the specified log record as HTML.
@@ -55,3 +57,5 @@ class HTMLFormatter(logging.Formatter):
         res = logging.Formatter.format(self, record)
         self._style._fmt = last_fmt
         return res
+
+    # pylint: enable=protected-access

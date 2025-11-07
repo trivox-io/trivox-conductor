@@ -17,11 +17,14 @@ Design
 - Avoid raising; let the service aggregate results and decide on failure policy.
 """
 
+# TODO: This is deprecated in favor of preflight checks in
+# core/preflights/ and modules/capture/preflights.py
 from __future__ import annotations
-from typing import Tuple, Iterable
+
 import os
-import shutil
 import platform
+import shutil
+from typing import Iterable, Tuple
 
 try:
     import psutil  # type: ignore
@@ -37,25 +40,32 @@ class CapturePreflight:
     Stateless checks before starting capture. Keeps I/O minimal for testability.
     """
 
-    def check_disk_space(self, path: str, min_gb: float = 5.0) -> Tuple[bool, str]:
+    def check_disk_space(
+        self, path: str, min_gb: float = 5.0
+    ) -> Tuple[bool, str]:
         """
         Check if there is sufficient disk space at the given path.
-        
+
         :param path: Filesystem path to check.
         :type path: str
-        
+
         :param min_gb: Minimum required free space in gigabytes.
         :type min_gb: float
-        
+
         :return: Tuple of (is_ok, message).
         :rtype: Tuple[bool, str]
         """
         try:
-            check_path = path if os.path.exists(path) else os.path.dirname(path) or "."
+            check_path = (
+                path if os.path.exists(path) else os.path.dirname(path) or "."
+            )
             _, _u, free = shutil.disk_usage(check_path)
-            free_gb = free / (1024 ** 3)
+            free_gb = free / (1024**3)
             if free_gb >= float(min_gb):
-                return True, f"disk-ok: {free_gb:.2f} GB free >= {min_gb:.2f} GB"
+                return (
+                    True,
+                    f"disk-ok: {free_gb:.2f} GB free >= {min_gb:.2f} GB",
+                )
             return False, f"disk-low: {free_gb:.2f} GB free < {min_gb:.2f} GB"
         except Exception as e:
             # Don’t hard fail; surface a readable message.
@@ -64,7 +74,7 @@ class CapturePreflight:
     def check_obs_health(self, adapter: CaptureAdapter) -> Tuple[bool, str]:
         """
         Check if the OBS adapter is healthy and reachable.
-        
+
         :return: Tuple of (is_ok, message).
         :rtype: Tuple[bool, str]
         """
@@ -74,7 +84,11 @@ class CapturePreflight:
     def check_minecraft_foreground(
         self,
         *,
-        process_names: Iterable[str] = ("Minecraft.exe", "javaw.exe", "java.exe"),
+        process_names: Iterable[str] = (
+            "Minecraft.exe",
+            "javaw.exe",
+            "java.exe",
+        ),
         title_hints: Iterable[str] = ("Minecraft",),
     ) -> Tuple[bool, str]:
         """
@@ -111,7 +125,10 @@ class CapturePreflight:
                 GetForegroundWindow = user32.GetForegroundWindow
                 GetWindowThreadProcessId = user32.GetWindowThreadProcessId
                 GetForegroundWindow.restype = wintypes.HWND
-                GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+                GetWindowThreadProcessId.argtypes = [
+                    wintypes.HWND,
+                    ctypes.POINTER(wintypes.DWORD),
+                ]
                 GetWindowTextW = user32.GetWindowTextW
                 GetWindowTextLengthW = user32.GetWindowTextLengthW
 
@@ -145,15 +162,26 @@ class CapturePreflight:
                 except Exception:
                     pass
 
-                title_match = any(h.lower() in (title or "").lower() for h in title_hints)
+                title_match = any(
+                    h.lower() in (title or "").lower() for h in title_hints
+                )
 
                 if name_match or title_match:
-                    return True, f"mc-foreground-ok: pid={pid} name='{name}' title='{title}'"
+                    return (
+                        True,
+                        f"mc-foreground-ok: pid={pid} name='{name}' title='{title}'",
+                    )
                 else:
                     # If Minecraft is running but not foreground, surface that
                     if self._any_mc_process_running(process_names):
-                        return False, f"mc-running-not-foreground: pid={pid} name='{name}' title='{title}'"
-                    return False, f"mc-not-running: foreground pid={pid} name='{name}' title='{title}'"
+                        return (
+                            False,
+                            f"mc-running-not-foreground: pid={pid} name='{name}' title='{title}'",
+                        )
+                    return (
+                        False,
+                        f"mc-not-running: foreground pid={pid} name='{name}' title='{title}'",
+                    )
 
             except Exception as e:
                 # Degrade to “is running” probe if Win32 calls fail
@@ -177,6 +205,9 @@ class CapturePreflight:
             try:
                 if (proc.info.get("name") or "").lower() in names:
                     return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied):  # pragma: no cover
+            except (
+                psutil.NoSuchProcess,
+                psutil.AccessDenied,
+            ):  # pragma: no cover
                 continue
         return False

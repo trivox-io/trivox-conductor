@@ -14,7 +14,7 @@ class CommandException(Exception):
         """
         :param message: The error message.
         :type message: str
-        
+
         :param exit_code: The exit code for the exception.
         :type exit_code: int
         """

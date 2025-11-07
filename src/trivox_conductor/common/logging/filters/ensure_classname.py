@@ -24,6 +24,9 @@ class EnsureClassName(logging.Filter):
     Falls back to "-" when not in a class context (module funcs/staticmethods).
     """
 
+    # TODO: Refactor to reduce complexity
+    # Justification: Accessing protected member _getframe of sys is necessary here
+    # pylint: disable=protected-access
     def filter(self, record: logging.LogRecord) -> bool:
         # keep any explicitly-provided classname
         if getattr(record, "classname", None):
@@ -47,3 +50,5 @@ class EnsureClassName(logging.Filter):
         # Fallback: we didn’t find the exact frame (wrappers, C calls, etc.)
         record.classname = "-"
         return True
+
+    # pylint: enable=protected-access

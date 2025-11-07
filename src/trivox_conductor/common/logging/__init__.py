@@ -1,4 +1,3 @@
-
 """
 Trivox Conductor Logger Package
 """
@@ -23,7 +22,7 @@ def setup_logging(
     config_path: Optional[Union[str, Path]] = None,
     overrides: Optional[Dict[str, Any]] = None,
     enable_queue: bool = False,
-) -> None:
+):
     """
     Set up logging configuration.
     Accepts:

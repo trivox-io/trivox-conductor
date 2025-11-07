@@ -1,14 +1,27 @@
 """
 Typed, safe, and subclass-isolated endpoint registry.
 """
+
 from __future__ import annotations
 
-from typing import Callable, Generic, TypeVar, ClassVar, Mapping, MutableMapping, Iterator, Optional, Type
-import threading
 import re
+import threading
 from abc import ABC
+from typing import (
+    Callable,
+    ClassVar,
+    Generic,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Type,
+    TypeVar,
+)
 
-T = TypeVar("T")  # endpoint implementation type (classes deriving from endpoint_base)
+T = TypeVar(
+    "T"
+)  # endpoint implementation type (classes deriving from endpoint_base)
 
 
 class EndpointRegistry(Generic[T]):
@@ -17,6 +30,11 @@ class EndpointRegistry(Generic[T]):
 
     Subclasses **must** set `endpoint_base` to the ABC (or base class) that all
     endpoint implementations derive from.
+
+    :cvar endpoint_base: ClassVar[type]: The base class for registered endpoints.
+    :cvar _registry: ClassVar[MutableMapping[str, Type[T]]]: Mapping of names to
+        implementation classes.
+    :cvar _lock: ClassVar[threading.RLock]: Lock for thread-safe
     """
 
     endpoint_base: ClassVar[type] = ABC  # override in subclasses
@@ -33,19 +51,21 @@ class EndpointRegistry(Generic[T]):
         return impl_class.__name__.lower()
 
     @classmethod
-    def register(cls, name: str, impl_class: Type[T], *, replace: bool = False):
+    def register(
+        cls, name: str, impl_class: Type[T], *, replace: bool = False
+    ):
         """
         Register an endpoint implementation class.
-        
+
         :param name: Name to register the implementation under.
         :type name: str
-        
+
         :param impl_class: Implementation class to register.
         :type impl_class: Type[T]
-        
+
         :param replace: Whether to replace an existing registration.
         :type replace: bool
-        
+
         :raises TypeError: If `impl_class` does not subclass `endpoint_base`.
         :raises KeyError: If `name` is already registered and `replace` is False
         """
@@ -62,7 +82,7 @@ class EndpointRegistry(Generic[T]):
     def unregister(cls, name: str):
         """
         Unregister an endpoint implementation by name.
-        
+
         :param name: Name of the implementation to unregister.
         :type name: str
         """
@@ -70,32 +90,40 @@ class EndpointRegistry(Generic[T]):
             cls._registry.pop(name, None)
 
     @classmethod
-    def endpoint(cls, name: Optional[str] = None, *, replace: bool = False) -> Callable[[Type[T]], Type[T]]:
+    def endpoint(
+        cls, name: Optional[str] = None, *, replace: bool = False
+    ) -> Callable[[Type[T]], Type[T]]:
         """
         Decorator to register an endpoint implementation class.
-        
+
         :param name: Name to register the implementation under.
         :type name: Optional[str]
-        
+
         :param replace: Whether to replace an existing registration.
         :type replace: bool
         """
+
         def decorator(impl_class: Type[T]) -> Type[T]:
-            cls.register(name or cls._infer_name(impl_class), impl_class, replace=replace)
+            cls.register(
+                name or cls._infer_name(impl_class),
+                impl_class,
+                replace=replace,
+            )
             return impl_class
+
         return decorator
 
     @classmethod
     def get(cls, name: str) -> Type[T]:
         """
         Get the endpoint implementation class by name.
-        
+
         :param name: Name of the implementation to retrieve.
         :type name: str
-        
+
         :return: Implementation class.
         :rtype: Type[T]
-        
+
         :raises KeyError: If the name is not registered.
         """
         try:
@@ -107,10 +135,10 @@ class EndpointRegistry(Generic[T]):
     def try_get(cls, name: str) -> Optional[Type[T]]:
         """
         Try to get the endpoint implementation class by name.
-        
+
         :param name: Name of the implementation to retrieve.
         :type name: str
-        
+
         :return: Implementation class or None if not found.
         :rtype: Optional[Type[T]]
         """
@@ -133,7 +161,7 @@ class EndpointRegistry(Generic[T]):
     def all(cls) -> Mapping[str, Type[T]]:
         """
         Get a mapping of all registered endpoint implementations.
-        
+
         :return: Mapping of names to implementation classes.
         :rtype: Mapping[str, Type[T]]
         """
@@ -152,27 +180,29 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def find_contains(cls, needle: str) -> list[Type[T]]:
         """
-        Find all endpoint implementations whose names 
+        Find all endpoint implementations whose names
         contain the given substring (case-insensitive).
-        
+
         :param needle: Substring to search for.
         :type needle: str
-        
+
         :return: List of matching implementation classes.
         :rtype: list[Type[T]]
         """
         n = needle.lower()
-        return [impl for key, impl in cls._registry.items() if n in key.lower()]
+        return [
+            impl for key, impl in cls._registry.items() if n in key.lower()
+        ]
 
     @classmethod
     def find_regex(cls, pattern: str) -> list[Type[T]]:
         """
         Find all endpoint implementations whose names
         match the given regex pattern (case-insensitive).
-        
+
         :param pattern: Regex pattern to search for.
         :type pattern: str
-        
+
         :return: List of matching implementation classes.
         :rtype: list[Type[T]]
         """
@@ -183,10 +213,10 @@ class EndpointRegistry(Generic[T]):
     def instantiate(cls, name: str, *args, **kwargs) -> T:
         """
         Instantiate an endpoint implementation by name.
-        
+
         :param name: Name of the implementation to instantiate.
         :type name: str
-        
+
         :return: Instance of the implementation.
         :rtype: T
         """

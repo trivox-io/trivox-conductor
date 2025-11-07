@@ -1,3 +1,7 @@
+"""
+Settings management for the application.
+Provides the Settings class for managing application settings.
+"""
 
 from typing import Any, Optional
 
@@ -10,7 +14,7 @@ class Settings(SettingsManager):
     """
     This class is used to manage the settings for the application.
 
-    :extends: SettingsManager
+    :cvar _instance: Optional[Settings]: Singleton instance of the Settings class.
     """
 
     _instance = None
@@ -43,6 +47,9 @@ class Settings(SettingsManager):
         :param key: The key to get from the settings.
         :type key: Optional[str]
 
+        :param default: The default value if the key is not found.
+        :type default: Optional[Any]
+
         :return: The settings data.
         :rtype: dict
         """
@@ -63,7 +70,6 @@ class Settings(SettingsManager):
         :param data: The data to add to the settings.
         :type data: dict
         """
-
         self.data.update(data)
 
     def save(self):

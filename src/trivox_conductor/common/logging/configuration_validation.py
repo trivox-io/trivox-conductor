@@ -16,6 +16,7 @@ class ConfigValidation:
             if hn not in hdl_names:
                 raise ValueError(f"{where} references missing handler '{hn}'")
 
+    # TODO: Refactor to reduce complexity
     @staticmethod
     def validate(cfg: dict):
         """

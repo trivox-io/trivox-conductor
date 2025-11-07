@@ -1,10 +1,18 @@
-# trivox_conductor/core/preflight/engine.py
+"""
+Preflight engine to run preflight checks for adapters.
+"""
+
 from __future__ import annotations
-from typing import Mapping, Any, List, Optional
+
+from typing import Any, List, Mapping, Optional
+
+from trivox_conductor.core.profiles.profile_models import (
+    Adapter,
+    PipelineProfile,
+)
 
 from .preflight_registry import PreflightRegistry
 from .preflight_types import PreflightContext, PreflightFailure, Role
-from trivox_conductor.core.profiles.profile_models import PipelineProfile, Adapter
 
 
 def run_preflights(
@@ -15,6 +23,27 @@ def run_preflights(
     base_settings: Mapping[str, Any],
     session_id: Optional[str] = None,
 ) -> List[PreflightFailure]:
+    """
+    Run preflight checks for a given adapter role and profile.
+
+    :param role: The adapter role (e.g., 'capture', 'uploader').
+    :type role: Role
+
+    :param profile: The pipeline profile containing adapter configurations.
+    :type profile: Optional[PipelineProfile]
+
+    :param adapter: The adapter instance to run preflights against.
+    :type adapter: Any
+
+    :param base_settings: Base settings to use for preflight checks.
+    :type base_settings: Mapping[str, Any]
+
+    :param session_id: Optional session identifier for context.
+    :type session_id: Optional[str]
+
+    :return: List of preflight failures encountered.
+    :rtype: List[PreflightFailure]
+    """
     if profile is None:
         return []
 

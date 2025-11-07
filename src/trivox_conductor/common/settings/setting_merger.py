@@ -1,3 +1,6 @@
+"""
+Setting merger for application settings.
+"""
 
 from typing import Tuple
 

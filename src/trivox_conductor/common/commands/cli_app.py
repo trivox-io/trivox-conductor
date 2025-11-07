@@ -8,16 +8,23 @@ import sys
 from dataclasses import dataclass
 from typing import List, Optional, Type
 
+from .argument_type import coerce_type
 from .base_command import BaseCommand
 from .exceptions import CommandException
 from .registry import CommandRegistry
-from .argument_type import coerce_type
 
 
 @dataclass
 class CLIConfig:
     """
     Configuration for the CLI application.
+
+    :cvar app_name: Optional[str]: The name of the application.
+    :cvar version: Optional[str]: The version of the application.
+    :cvar description: Optional[str]: The description of the application.
+    :cvar usage: Optional[str]: The usage string for the application.
+    :cvar formatter_class: Optional[Type[argparse.HelpFormatter]]:
+        The formatter class for the argument parser.
     """
 
     app_name: Optional[str] = None
@@ -113,6 +120,7 @@ class BaseCLIApp:
             )
             self.define_command_arguments(command_parser, command_cls)
 
+    # TODO: refactor to reduce complexity
     def define_command_arguments(
         self, command_parser: argparse.ArgumentParser, command_cls: BaseCommand
     ):

@@ -1,31 +1,41 @@
+"""
+Base command processor for Trivox Capture commands.
+"""
 
-from typing import Type, Mapping, Any, Optional
+from typing import Any, Mapping, Optional, Type
 
+from trivox_conductor.common.commands.base_command_processor import (
+    BaseCommandProcessor,
+)
 from trivox_conductor.common.logger import logger
-from trivox_conductor.common.commands.base_command_processor import BaseCommandProcessor
-from trivox_conductor.core.profiles.profile_injector import resolve_capture_profile, ResolvedCaptureProfile
+from trivox_conductor.core.profiles.profile_injector import (
+    ResolvedCaptureProfile,
+    resolve_capture_profile,
+)
 
 
 class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
     """
     Command processor for Trivox Capture commands.
-    
+
     :cvar SERVICE_CLS (Type): The service class to instantiate.
     :cvar ACTION_MAP (Mapping[str, str]): Mapping of action names to service method names.
     """
 
-    SERVICE_CLS: Type        # e.g. CaptureService
+    SERVICE_CLS: Type  # e.g. CaptureService
     ACTION_MAP: Mapping[str, str]  # e.g. {"start": "start", "stop": "stop"}
     _overrides: Optional[dict[str, Any]] = None
     _pipeline_profile: Optional[ResolvedCaptureProfile] = None
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
-        self._pipeline_profile_key: Optional[str] = self._kwargs.get("pipeline_profile")
-        
+        self._pipeline_profile_key: Optional[str] = self._kwargs.get(
+            "pipeline_profile"
+        )
+
         # TODO: Implement profile application logic
-        self._config_file_path : Optional[str] = self._kwargs.get("config")
-    
+        self._config_file_path: Optional[str] = self._kwargs.get("config")
+
     def set_pipeline_profile(self, overrides: dict[str, Any]):
         """Set connection overrides for the processor."""
         resolved = resolve_capture_profile(

@@ -1,7 +1,11 @@
-# trivox_conductor/core/profiles/injector.py
+"""
+Profile injector utility for resolving and applying capture profiles.
+"""
+
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Mapping
+from typing import Any, Dict, Mapping, Optional
 
 from trivox_conductor.core.profiles import profile_manager
 from trivox_conductor.core.profiles.profile_models import PipelineProfile
@@ -9,6 +13,13 @@ from trivox_conductor.core.profiles.profile_models import PipelineProfile
 
 @dataclass
 class ResolvedCaptureProfile:
+    """
+    Result of resolving a capture profile.
+
+    :cvar profile: The activated pipeline profile, or None if no profile_key was given.
+    :cvar overrides: The merged capture overrides.
+    """
+
     profile: Optional[PipelineProfile]
     overrides: Dict[str, Any]
 
@@ -24,11 +35,22 @@ def resolve_capture_profile(
     - If profile_key is None:
         * does not touch registries
         * returns overrides as-is
+
+    :param profile_key: The key of the profile to activate.
+    :type profile_key: Optional[str]
+
+    :param overrides: Additional capture overrides to apply.
+    :type overrides: Mapping[str, Any] | None
+
+    :return: The resolved capture profile and merged overrides.
+    :rtype: ResolvedCaptureProfile
     """
     incoming_overrides = dict(overrides or {})
 
     if not profile_key:
-        return ResolvedCaptureProfile(profile=None, overrides=incoming_overrides)
+        return ResolvedCaptureProfile(
+            profile=None, overrides=incoming_overrides
+        )
 
     # Activates adapters as a side-effect
     profile = profile_manager.activate(profile_key)

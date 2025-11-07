@@ -1,3 +1,7 @@
+"""
+Manager for application settings.
+Handles loading, saving, and merging of settings files.
+"""
 
 import os
 from abc import ABC, abstractmethod
@@ -19,9 +23,6 @@ class SettingsManager(ABC):
     _user_settings: Optional[dict] = None
 
     _setting_path: Optional[str] = None
-    _configuration_descriptor = (
-        f"{os.getenv('TRIVOX_CONFIG_PATH', os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '.trivox_conductor/settings'))}/"
-    )
 
     def __init__(self):
         """
@@ -29,6 +30,20 @@ class SettingsManager(ABC):
         - Set the environment variable for the IC Inspector path if it does not exist.
         - Create the settings file if it does not exist.
         """
+        # TODO: Refactor config path logic
+        config_path = os.getenv("TRIVOX_CONFIG_PATH", None)
+        if config_path is None:
+            config_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "..",
+                "..",
+                ".trivox_conductor/settings",
+            )
+
+        self._configuration_descriptor = os.path.abspath(config_path) + "/"
+
         self.__ensure_directory()
         self.default_file = self.__set_setting_file(
             self._configuration_descriptor, "default-settings.yml"
