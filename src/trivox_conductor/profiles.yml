@@ -1,6 +1,6 @@
 profiles:
   minecraft_obs_replay:
-    label: "Minecraft (OBS + ReplayMod)"
+    label: "Minecraft (OBS)"
 
     adapters:
       capture:

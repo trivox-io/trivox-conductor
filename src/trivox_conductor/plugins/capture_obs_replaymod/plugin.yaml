@@ -1,9 +1,0 @@
-name: capture_obs_replaymod
-role: capture
-module: adapter
-class: OBSReplaymodAdapter
-version: "0.1.0"
-requires_api: ">=1.0,<2.0"
-capabilities:
-  - scenes:list
-  - profiles:list
