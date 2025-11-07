@@ -25,3 +25,7 @@ profiles:
             required: false
             params:
               window_title_contains: "Minecraft"
+      watcher:
+        name: "replaywatcheradapter"
+        overrides:
+          watch_path: "C:/Users/USUARIO/Videos"

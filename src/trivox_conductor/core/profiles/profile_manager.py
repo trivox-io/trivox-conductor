@@ -14,15 +14,7 @@ from trivox_conductor.core.profiles.profile_models import (
     PipelineProfile,
     PreflightConfig,
 )
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
-
-# later: from .mux_registry import MuxRegistry, etc.
-
-ROLE_REGISTRIES = {
-    "capture": CaptureRegistry,
-    # "watcher": WatcherRegistry,
-    # "mux": MuxRegistry, ...
-}
+from trivox_conductor.core.registry import ROLE_REGISTRIES
 
 
 class ProfileManager:

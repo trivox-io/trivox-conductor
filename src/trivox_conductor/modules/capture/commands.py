@@ -26,10 +26,14 @@ This module defines CLI shape only; business logic and I/O are handled by the
 processor and service layers.
 """
 
-from trivox_conductor.common.logger import logger
-from trivox_conductor.common.base_command import TrivoxConductorCommand
-from trivox_conductor.common.commands.base_command import register_command
+from trivox_conductor.common.base_command import (
+    ActionArgument,
+    SessionIDArgument,
+    TrivoxConductorCommand,
+)
 from trivox_conductor.common.commands.argument_type import ArgumentType
+from trivox_conductor.common.commands.base_command import register_command
+from trivox_conductor.common.logger import logger
 
 from .processors import CaptureCommandProcessor
 
@@ -39,23 +43,30 @@ class CaptureCommand(TrivoxConductorCommand):
     """
     Command for Capture module.
     """
-    
+
     name = "capture"
     args = [
-        ArgumentType("action", str, "Action", choices=("start","stop","list_scenes","list_profiles"), required=True),
-        ArgumentType("session_id", str, "Session ID", default="20251029_1050_s0_e0_test"),
-
+        ActionArgument("start", "stop", "list_scenes", "list_profiles"),
+        SessionIDArgument(),
         # --- connection overrides (optional) ---
         ArgumentType("host", str, "OBS host", default=None),
         ArgumentType("port", int, "OBS port", default=None),
         ArgumentType("password", str, "OBS password", default=None),
-        ArgumentType("request_timeout_sec", float, "OBS request timeout (sec)", default=None),
-
+        ArgumentType(
+            "request_timeout_sec",
+            float,
+            "OBS request timeout (sec)",
+            default=None,
+        ),
         # --- selection (optional) ---
-        ArgumentType("scene", str, "Scene to select before start", default=None),
-        ArgumentType("profile", str, "Profile to select before start", default=None),
+        ArgumentType(
+            "scene", str, "Scene to select before start", default=None
+        ),
+        ArgumentType(
+            "profile", str, "Profile to select before start", default=None
+        ),
     ]
-    
+
     __doc__ = """
     Capture command for managing capture operations.
     Usage:

@@ -25,6 +25,8 @@ def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
     is 'active' for any role. That decision is made later by profiles or
     explicit CLI/GUI actions.
     """
+    for reg in ROLE_REGISTRIES.values():
+        logger.debug(f"Clearing registry for role: {reg}")
     plugins_root = os.path.join(os.path.dirname(__file__), "plugins")
     descriptors = load_descriptors(os.path.abspath(plugins_root))
     logger.debug(f"Plugin descriptors loaded: {descriptors}")

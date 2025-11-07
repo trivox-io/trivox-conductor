@@ -23,7 +23,9 @@ from __future__ import annotations
 
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
-from trivox_conductor.common.base_processor import TrivoxCaptureCommandProcessor
+from trivox_conductor.common.base_processor import (
+    TrivoxCaptureCommandProcessor,
+)
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 
 from .services import CaptureService
@@ -34,6 +36,7 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     Command processor for Capture module commands.
     """
 
+    ROLE = "capture"
     SERVICE_CLS = CaptureService
     ACTION_MAP = {
         "start": "start",
@@ -41,11 +44,9 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
         "list_scenes": "list_scenes",
         "list_profiles": "list_profiles",
     }
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._action: str = self._kwargs.get("action", "")
-
         # Optional selections
         self._session_id: str = self._kwargs.get("session_id", None)
         self._scene = self._kwargs.get("scene")
@@ -53,12 +54,14 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
 
         # Connection overrides (only include if provided)
         overrides = {
-            k: v for k, v in {
+            k: v
+            for k, v in {
                 "host": self._kwargs.get("host"),
                 "port": self._kwargs.get("port"),
                 "password": self._kwargs.get("password"),
                 "request_timeout_sec": self._kwargs.get("request_timeout_sec"),
-            }.items() if v is not None
+            }.items()
+            if v is not None
         }
         self.set_pipeline_profile(overrides)
 
@@ -79,7 +82,7 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
         if action in ("list_scenes", "list_profiles"):
             return {"overrides": self._overrides}
         return {}
-    
+
     def run(self):
         # Implement the command processing logic here
         logger.debug("Running CaptureCommandProcessor")

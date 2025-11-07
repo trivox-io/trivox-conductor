@@ -92,6 +92,3 @@ class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
 
 
 register_role_registry("capture", CaptureRegistry)
-
-
-register_role_registry("capture", CaptureRegistry)

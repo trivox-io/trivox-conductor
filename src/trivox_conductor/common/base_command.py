@@ -4,7 +4,9 @@ This module defines the TrivoxConductorCommand class, which serves as a base for
 ic_ingest commands.
 """
 
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import Any, Iterable, List, Optional
 
 from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.common.commands.base_command import BaseCommand
@@ -13,6 +15,56 @@ from trivox_conductor.common.commands.base_command_processor import (
 )
 from trivox_conductor.common.commands.exceptions import CommandException
 from trivox_conductor.common.logger import logger
+
+
+class ActionArgument(ArgumentType):
+    """
+    Standardized 'action' CLI argument.
+
+    Usage:
+        ActionArgument("start", "stop")
+        ActionArgument(*MyCommand.ACTIONS)
+        ActionArgument(("start", "stop"))  # tuple/list also works
+    """
+
+    def __init__(self, *choices: str | Iterable[str]):
+        # Support either:
+        #   ActionArgument("start", "stop")
+        # or
+        #   ActionArgument(("start", "stop"))
+        if len(choices) == 1 and not isinstance(choices[0], str):
+            # Single iterable passed in
+            choices_iter = tuple(choices[0])  # type: ignore[arg-type]
+        else:
+            # Multiple strings
+            choices_iter = tuple(choices)  # type: ignore[assignment]
+
+        super().__init__(
+            "action",
+            str,
+            "Action",
+            choices=choices_iter,
+            required=True,
+        )
+
+
+class SessionIDArgument(ArgumentType):
+    """
+    Standardized 'session_id' CLI argument.
+    """
+
+    def _generate_default_session_id(self) -> str:
+        return "20251029_1050_s0_e0_test"
+
+    def __init__(
+        self,
+    ):
+        super().__init__(
+            "session_id",
+            str,
+            "Session ID",
+            default=self._generate_default_session_id(),
+        )
 
 
 class TrivoxConductorCommand(BaseCommand):
@@ -33,7 +85,7 @@ class TrivoxConductorCommand(BaseCommand):
             "pipeline_profile",
             str,
             "Profile to select before start",
-            default=None,
+            default="minecraft_obs_replay",
         ),
     ]
 

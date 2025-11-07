@@ -22,6 +22,7 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
     :cvar ACTION_MAP (Mapping[str, str]): Mapping of action names to service method names.
     """
 
+    ROLE: str
     SERVICE_CLS: Type  # e.g. CaptureService
     ACTION_MAP: Mapping[str, str]  # e.g. {"start": "start", "stop": "stop"}
     _overrides: Optional[dict[str, Any]] = None
@@ -39,10 +40,16 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
     def set_pipeline_profile(self, overrides: dict[str, Any]):
         """Set connection overrides for the processor."""
         resolved = resolve_capture_profile(
+            self.ROLE,
             self._pipeline_profile_key,
             overrides=overrides,
         )
+        logger.warning(f"Resolved pipeline profile: {resolved.profile}")
         self._overrides = resolved.overrides
+        logger.warning(
+            f"Using pipeline profile: {resolved.profile} "
+            f"(overrides: {self._overrides})"
+        )
         self._pipeline_profile = resolved.profile
 
     def build_service(self):

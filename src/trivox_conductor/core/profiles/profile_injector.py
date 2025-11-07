@@ -25,6 +25,7 @@ class ResolvedCaptureProfile:
 
 
 def resolve_capture_profile(
+    role: str,
     profile_key: Optional[str],
     overrides: Mapping[str, Any] | None = None,
 ) -> ResolvedCaptureProfile:
@@ -35,6 +36,9 @@ def resolve_capture_profile(
     - If profile_key is None:
         * does not touch registries
         * returns overrides as-is
+
+    :param role: The role for which to resolve the profile (e.g. "capture").
+    :type role: str
 
     :param profile_key: The key of the profile to activate.
     :type profile_key: Optional[str]
@@ -55,10 +59,10 @@ def resolve_capture_profile(
     # Activates adapters as a side-effect
     profile = profile_manager.activate(profile_key)
 
-    capture_adapter = profile.adapters.get("capture")
+    adapter_config = profile.adapters.get(role)
     base: Dict[str, Any] = {}
-    if capture_adapter:
-        base.update(capture_adapter.overrides)
+    if adapter_config:
+        base.update(adapter_config.overrides)
 
     merged = {
         **base,
