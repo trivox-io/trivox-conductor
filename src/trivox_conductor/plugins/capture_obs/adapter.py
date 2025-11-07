@@ -45,16 +45,16 @@ so that callers do not need to import SDK-specific error types.
 from __future__ import annotations
 
 import logging
-from typing import List, Dict, Optional
 from contextlib import suppress
+from typing import Dict, List, Optional
 
-from obsws_python import error as obs_err
 import obsws_python as obsws
+from obsws_python import error as obs_err
 
-from trivox_conductor.core.contracts.capture import CaptureAdapter
 from trivox_conductor.core.contracts.base_contract import AdapterMeta
-from trivox_conductor.core.events.bus import BUS
+from trivox_conductor.core.contracts.capture import CaptureAdapter
 from trivox_conductor.core.events import topics
+from trivox_conductor.core.events.bus import BUS
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class OBSAdapter(CaptureAdapter):
     """
     Capture adapter for OBS (Open Broadcaster Software).
     Implements the CaptureAdapter contract.
-    
+
     :cvar meta (AdapterMeta): Metadata describing the adapter.
     """
 
@@ -98,7 +98,9 @@ class OBSAdapter(CaptureAdapter):
         timeout = float(self._settings.get("request_timeout_sec", 3.0))
 
         try:
-            self._client = obsws.ReqClient(host=host, port=port, password=password, timeout=timeout)
+            self._client = obsws.ReqClient(
+                host=host, port=port, password=password, timeout=timeout
+            )
         except Exception as e:
             self._client = None
             logger.error(f"OBS connect failed: {e}")
@@ -109,7 +111,11 @@ class OBSAdapter(CaptureAdapter):
     def _extract_scene_name(self, item) -> Optional[str]:
         """Accept both dataclass-style attrs and dict payloads."""
         if isinstance(item, dict):
-            return item.get("sceneName") or item.get("scene_name") or item.get("name")
+            return (
+                item.get("sceneName")
+                or item.get("scene_name")
+                or item.get("name")
+            )
         return (
             getattr(item, "scene_name", None)
             or getattr(item, "sceneName", None)
@@ -155,9 +161,12 @@ class OBSAdapter(CaptureAdapter):
             elif isinstance(it, dict):
                 out.append(it.get("profileName") or it.get("name"))
             else:
-                out.append(getattr(it, "profile_name", None) or getattr(it, "profileName", None))
+                out.append(
+                    getattr(it, "profile_name", None)
+                    or getattr(it, "profileName", None)
+                )
         return [p for p in out if p]
-    
+
     def select_scene(self, name: str):
         if not name:
             return
@@ -165,8 +174,10 @@ class OBSAdapter(CaptureAdapter):
         try:
             c.set_current_program_scene(name)  # SetCurrentProgramScene
         except obs_err.OBSSDKTimeoutError as e:
-            raise RuntimeError(f"SetCurrentProgramScene('{name}') failed: {e}") from e
-    
+            raise RuntimeError(
+                f"SetCurrentProgramScene('{name}') failed: {e}"
+            ) from e
+
     def select_profile(self, name: str):
         if not name:
             return
@@ -176,13 +187,16 @@ class OBSAdapter(CaptureAdapter):
             return
         # if not supported, ignore gracefully
         # (You can log a warning from your central logger here)
-    
+
     def start_capture(self):
         c = self._ensure_client()
         try:
             c.start_record()  # StartRecord
         except obs_err.OBSSDKTimeoutError as e:
-            BUS.publish(topics.CAPTURE_ERROR, {"session_id": self._session_id, "error": str(e)})
+            BUS.publish(
+                topics.CAPTURE_ERROR,
+                {"session_id": self._session_id, "error": str(e)},
+            )
             raise RuntimeError(f"StartRecord failed: {e}") from e
 
         BUS.publish(topics.CAPTURE_STARTED, {"session_id": self._session_id})
@@ -194,14 +208,17 @@ class OBSAdapter(CaptureAdapter):
             res = c.stop_record()  # StopRecord
             output_path = getattr(res, "output_path", None)
         except obs_err.OBSSDKTimeoutError as e:
-            BUS.publish(topics.CAPTURE_ERROR, {"session_id": self._session_id, "error": str(e)})
+            BUS.publish(
+                topics.CAPTURE_ERROR,
+                {"session_id": self._session_id, "error": str(e)},
+            )
             raise RuntimeError(f"StopRecord failed: {e}") from e
 
         payload = {"session_id": self._session_id}
         if output_path:
             payload["output_path"] = output_path
         BUS.publish(topics.CAPTURE_STOPPED, payload)
-        
+
     def is_recording(self) -> bool:
         c = self._ensure_client()
         res = c.get_record_status()  # returns { "outputActive": bool, ... }

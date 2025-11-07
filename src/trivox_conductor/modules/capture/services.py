@@ -34,19 +34,20 @@ All external I/O is delegated to the adapter; this service composes policy and f
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Optional, List, Dict, Mapping, Any
+from typing import Any, Dict, List, Mapping, Optional
+
 from trivox_conductor.common.logger import logger
 from trivox_conductor.core.contracts.capture import CaptureAdapter
-from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.events import topics
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
-from trivox_conductor.core.services.base_service import BaseService
+from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.preflights.preflight_engine import run_preflights
 from trivox_conductor.core.profiles.profile_models import PipelineProfile
+from trivox_conductor.core.registry.capture_registry import CaptureRegistry
+from trivox_conductor.core.services.base_service import BaseService
 
+from .preflight import CapturePreflight
 from .settings import CaptureSettingsModel
 from .state import CaptureState
-from .preflight import CapturePreflight
 from .state_store import CaptureStateStore
 
 
@@ -69,10 +70,10 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         """
         :param registry: CaptureRegistry instance for adapter management.
         :type registry: CaptureRegistry
-        
+
         :param preflight: Optional CapturePreflight instance for checks.
         :type preflight: Optional[CapturePreflight]
-        
+
         :param state: Optional CaptureState instance for runtime state.
         :type state: Optional[CaptureState]
         """
@@ -81,22 +82,26 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self._store = CaptureStateStore()
         # Load persisted state if no in-memory state provided
         self._state = state or self._store.load()
-    
+
     # ----- Queries -----
-    def list_scenes(self, *, overrides: Optional[Mapping[str, Any]] = None) -> List[str]:
+    def list_scenes(
+        self, *, overrides: Optional[Mapping[str, Any]] = None
+    ) -> List[str]:
         """
         List available capture scenes from the active adapter.
-        
+
         :return: List of scene names.
         :rtype: List[str]
         """
         adapter = self._get_configured_adapter(overrides=overrides)
         return adapter.list_scenes() if adapter else []
 
-    def list_profiles(self, *, overrides: Optional[Mapping[str, Any]] = None) -> List[str]:
+    def list_profiles(
+        self, *, overrides: Optional[Mapping[str, Any]] = None
+    ) -> List[str]:
         """
         List available capture profiles from the active adapter.
-        
+
         :return: List of profile names.
         :rtype: List[str]
         """
@@ -104,37 +109,47 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         return adapter.list_profiles() if adapter else []
 
     # ----- Commands -----
-    def start(self, session_id: str, *, scene: Optional[str] = None, profile: Optional[str] = None, overrides: Optional[Mapping[str, Any]] = None,  pipeline_profile: Optional[PipelineProfile] = None,):
+    def start(
+        self,
+        session_id: str,
+        *,
+        scene: Optional[str] = None,
+        profile: Optional[str] = None,
+        overrides: Optional[Mapping[str, Any]] = None,
+        pipeline_profile: Optional[PipelineProfile] = None,
+    ):
         """
         Start the capture process using the active adapter.
-        
+
         :param session_id: The session ID for the capture operation.
         :type session_id: str
-        
+
         :param scene: Optional scene name to select before starting.
         :type scene: Optional[str]
-        
+
         :param profile: Optional profile name to select before starting.
         :type profile: Optional[str]
-        
+
         :param overrides: Optional mapping of connection overrides.
         :type overrides: Optional[Mapping[str, Any]]
-        
+
         :raises RuntimeError: If preflight checks fail or no adapter is configured.
         """
         if not session_id:
             raise ValueError("session_id is required")
         if self._state.is_recording:
-            logger.info(f"capture.already_recording - {self._state.session_id}")
+            logger.info(
+                f"capture.already_recording - {self._state.session_id}"
+            )
             return
-        
+
         cfg_dict = asdict(self._settings)
         cfg_dict["session_id"] = session_id
         if overrides:
             cfg_dict.update(overrides)
         adapter = self._get_configured_adapter(overrides=cfg_dict)
         # --- Preflight: collect failures and bail once, with a helpful message ---
-        failures =  run_preflights(
+        failures = run_preflights(
             role="capture",
             profile=pipeline_profile,
             adapter=adapter,
@@ -143,7 +158,7 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         )
 
         required_failures = [f for f in failures if f.required]
-        soft_failures    = [f for f in failures if not f.required]
+        soft_failures = [f for f in failures if not f.required]
 
         if required_failures:
             msg = "; ".join(f"{f.id}: {f.message}" for f in required_failures)
@@ -151,8 +166,9 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             raise RuntimeError("Preflight failed: " + msg)
 
         for f in soft_failures:
-            logger.warning("capture.preflight_soft_fail - %s: %s", f.id, f.message)
-
+            logger.warning(
+                "capture.preflight_soft_fail - %s: %s", f.id, f.message
+            )
 
         # --- Safe to proceed: select scene/profile, then start ---
         try:
@@ -163,13 +179,18 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             if chosen_profile:
                 adapter.select_profile(chosen_profile)
         except Exception as e:
-            logger.error(f"capture.select_failed - {str(e)} - Scene: {chosen_scene}, Profile: {chosen_profile}")
+            logger.error(
+                f"capture.select_failed - {str(e)} - Scene: {chosen_scene}, Profile: {chosen_profile}"
+            )
             raise
 
         adapter.start_capture()
         self._state.start(session_id)
         self._store.save(self._state)
-        BUS.publish(topics.MANIFEST_UPDATED, {"session_id": session_id, "event": "capture.start"})
+        BUS.publish(
+            topics.MANIFEST_UPDATED,
+            {"session_id": session_id, "event": "capture.start"},
+        )
 
     def stop(self, *, overrides: Optional[Mapping[str, Any]] = None):
         """
@@ -189,7 +210,9 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             logger.warning(f"capture.adapter_is_recording_probe_failed: {e}")
 
         if not (self._state.is_recording or is_recording_now):
-            logger.info("capture.stop_ignored - not recording (memory & adapter)")
+            logger.info(
+                "capture.stop_ignored - not recording (memory & adapter)"
+            )
             return
 
         # Try to stop anyway; StopRecord is idempotent on OBS side.

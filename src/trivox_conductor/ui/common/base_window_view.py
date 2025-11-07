@@ -1,5 +1,5 @@
-
 from typing import Callable
+
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from trivox_conductor.common.logging.log_subscriber import log_subscriber
@@ -12,7 +12,7 @@ class BaseWindowView(QtWidgets.QMainWindow):
     :extends QtWidgets.QMainWindow: The base class for all windows
     """
 
-    _title = "Trivox Conductor" # TODO: From settings
+    _title = "Trivox Conductor"  # TODO: From settings
     output: QtWidgets.QPlainTextEdit
     setupUi: Callable[[QtWidgets.QMainWindow], None]
 

@@ -1,16 +1,16 @@
-
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from trivox_conductor.common.settings.settings_registry import register_setting
+from dataclasses import asdict, dataclass
+
 from trivox_conductor.common.settings.base_settings import BaseSettings
+from trivox_conductor.common.settings.settings_registry import register_setting
 
 
 @dataclass(frozen=True)
 class HandoffSettingsModel:
     """
     Configuration data for the Handoff module.
-    
+
     :cvar rclone_remote (str): Rclone remote name.
     :cvar dest_root (str): Destination root path for handoff.
     :cvar slack_channel (str): Slack channel for notifications.
@@ -28,7 +28,7 @@ class HandoffSettings(BaseSettings):
     """
     Settings for the Handoff module.
     """
-    
+
     name = "handoff"
 
     def __init__(self):

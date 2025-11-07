@@ -20,8 +20,8 @@ by the application bootstrap.
 """
 
 from .commands import CaptureCommand
-from .settings import CaptureSettings
 from .preflights import DiskSpaceCheck, WindowForegroundCheck
+from .settings import CaptureSettings
 
 __all__ = [
     "CaptureCommand",

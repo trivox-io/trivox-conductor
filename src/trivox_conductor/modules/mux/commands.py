@@ -1,8 +1,7 @@
-
-from trivox_conductor.common.logger import logger
 from trivox_conductor.common.base_command import TrivoxConductorCommand
-from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.commands.argument_type import ArgumentType
+from trivox_conductor.common.commands.base_command import register_command
+from trivox_conductor.common.logger import logger
 
 from .processors import MuxCommandProcessor
 
@@ -12,13 +11,17 @@ class MuxCommand(TrivoxConductorCommand):
     """
     Command for Mux module.
     """
-    
+
     name = "mux"
     args = [
-        ArgumentType("action", str, "Action", choices=("mux_clip"), required=True),
-        ArgumentType("session_id", str, "Session ID", default="20251029_1050_s0_e0_test"),
+        ArgumentType(
+            "action", str, "Action", choices=("mux_clip"), required=True
+        ),
+        ArgumentType(
+            "session_id", str, "Session ID", default="20251029_1050_s0_e0_test"
+        ),
     ]
-    
+
     __doc__ = """
     Mux command for managing mux operations.
     Usage:

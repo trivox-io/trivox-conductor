@@ -1,8 +1,7 @@
-
-from trivox_conductor.common.logger import logger
 from trivox_conductor.common.base_command import TrivoxConductorCommand
-from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.commands.argument_type import ArgumentType
+from trivox_conductor.common.commands.base_command import register_command
+from trivox_conductor.common.logger import logger
 
 from .processors import AIBrainCommandProcessor
 
@@ -12,12 +11,18 @@ class AICommand(TrivoxConductorCommand):
     """
     Command for AI module.
     """
-    
+
     name = "ai"
     args = [
-        ArgumentType("action", str, "Action", choices=("generate","markers"), required=True),
+        ArgumentType(
+            "action",
+            str,
+            "Action",
+            choices=("generate", "markers"),
+            required=True,
+        ),
     ]
-    
+
     __doc__ = """
     AI command for managing ai operations.
     Usage:

@@ -1,31 +1,36 @@
 from __future__ import annotations
+
+import ctypes
 import os
 import shutil
-import ctypes
 from ctypes import wintypes
 from typing import Optional
 
 from trivox_conductor.common.logger import logger
+from trivox_conductor.core.preflights.preflight_registry import (
+    PreflightRegistry,
+)
 from trivox_conductor.core.preflights.preflight_types import (
     PreflightContext,
     PreflightFailure,
     Role,
 )
-from trivox_conductor.core.preflights.preflight_registry import PreflightRegistry
 
 
 class DiskSpaceCheck:
     id = "capture.disk_space"
     role: Role = "capture"
     default_required = True
-    adapter_name: Optional[str] = None   # any capture adapter
+    adapter_name: Optional[str] = None  # any capture adapter
 
     def __call__(self, ctx: PreflightContext) -> Optional[PreflightFailure]:
         settings = ctx.settings
         path_key = settings.get("disk_path_key", "record_dir")
         record_dir = settings.get(path_key)
         if not record_dir:
-            logger.debug("capture.preflight_skip - disk: '%s' not set", path_key)
+            logger.debug(
+                "capture.preflight_skip - disk: '%s' not set", path_key
+            )
             return None
 
         min_gb = float(settings.get("min_record_free_gb", 5.0))
@@ -103,14 +108,18 @@ class WindowForegroundCheck:
         settings = ctx.settings
         pattern = settings.get("window_title_contains")
         if not pattern:
-            logger.debug("capture.preflight_skip - window_foreground: no pattern set")
+            logger.debug(
+                "capture.preflight_skip - window_foreground: no pattern set"
+            )
             return None
 
         title = _get_foreground_window_title()
         if title is None:
             # Can't determine foreground window → treat as soft issue,
             # profile can flip `required: true` if they want to block in this case.
-            msg = "Could not determine foreground window title on this platform"
+            msg = (
+                "Could not determine foreground window title on this platform"
+            )
             logger.debug("capture.preflight_skip - window_foreground: %s", msg)
             return None
 

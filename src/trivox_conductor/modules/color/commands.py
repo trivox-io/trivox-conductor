@@ -1,8 +1,7 @@
-
-from trivox_conductor.common.logger import logger
 from trivox_conductor.common.base_command import TrivoxConductorCommand
-from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.commands.argument_type import ArgumentType
+from trivox_conductor.common.commands.base_command import register_command
+from trivox_conductor.common.logger import logger
 
 from .processors import ColorCommandProcessor
 
@@ -12,12 +11,14 @@ class ColorCommand(TrivoxConductorCommand):
     """
     Command for Color module.
     """
-    
+
     name = "color"
     args = [
-        ArgumentType("action", str, "Action", choices=("color_pass"), required=True),
+        ArgumentType(
+            "action", str, "Action", choices=("color_pass"), required=True
+        ),
     ]
-    
+
     __doc__ = """
     Color command for managing color operations.
     Usage:

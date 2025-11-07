@@ -1,4 +1,3 @@
-
 from trivox_conductor.ui.common.controllers_mediator import ControllersMediator
 
 

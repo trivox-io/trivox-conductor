@@ -21,11 +21,11 @@ Design notes
 
 from __future__ import annotations
 
-from trivox_conductor.common.logger import logger
-from trivox_conductor.common.settings import settings
 from trivox_conductor.common.base_processor import (
     TrivoxCaptureCommandProcessor,
 )
+from trivox_conductor.common.logger import logger
+from trivox_conductor.common.settings import settings
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 
 from .services import CaptureService

@@ -29,6 +29,7 @@ their own role-specific methods while preserving this common lifecycle.
 """
 
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Dict, List, TypedDict
 
@@ -36,11 +37,12 @@ from typing import Dict, List, TypedDict
 class AdapterHealth(TypedDict, total=False):
     """
     Health check result for an adapter.
-    
+
     :cvar ok (bool): Whether the adapter is healthy.
     :cvar message (str): Human-readable status message.
     :cvar details (Dict[str, str]): Optional detailed status information.
     """
+
     ok: bool
     message: str
     details: Dict[str, str]
@@ -49,7 +51,7 @@ class AdapterHealth(TypedDict, total=False):
 class AdapterMeta(TypedDict, total=False):
     """
     Metadata describing an adapter's identity and capabilities.
-    
+
     :cvar name (str): Unique adapter name.
     :cvar version (str): Adapter version string.
     :cvar requires_api (str): Compatible API version range.
@@ -57,15 +59,18 @@ class AdapterMeta(TypedDict, total=False):
     :cvar role (str): Adapter role (e.g., capture, watcher).
     :cvar source (str): Adapter source type (e.g., local, entrypoint).
     """
+
     name: str
     version: str
     requires_api: str
     capabilities: List[str]
-    role: str           # capture, watcher, mux, color, uploader, notifier, ai
-    source: str         # "local", "entrypoint", "builtin"
+    role: str  # capture, watcher, mux, color, uploader, notifier, ai
+    source: str  # "local", "entrypoint", "builtin"
+
 
 class Adapter(ABC):
     """Minimal lifecycle for any adapter. Concrete roles extend this."""
+
     meta: AdapterMeta
 
     @abstractmethod
@@ -73,10 +78,10 @@ class Adapter(ABC):
         """
         Apply configuration settings and secrets to the adapter.
         Called once after instantiation, before start().
-        
+
         :param settings: Non-sensitive configuration dictionary.
         :type settings: Dict
-        
+
         :param secrets: Sensitive configuration dictionary.
         :type secrets: Dict
         """
@@ -94,7 +99,7 @@ class Adapter(ABC):
     def health(self) -> AdapterHealth:
         """
         Perform a health check on the adapter.
-        
+
         :return: Health status of the adapter.
         :rtype: AdapterHealth
         """

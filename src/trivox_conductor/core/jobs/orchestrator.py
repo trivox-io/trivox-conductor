@@ -1,9 +1,13 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict, Any, Callable
-from .types import JobState, JobKind
-from .pipelines import Pipeline
+from typing import Any, Callable, Dict
+
 from trivox_conductor.core.events.bus import BUS
+
+from .pipelines import Pipeline
+from .types import JobKind, JobState
+
 
 @dataclass
 class Job:
@@ -12,16 +16,20 @@ class Job:
     payload: Dict[str, Any]
     state: JobState = JobState.QUEUED
 
+
 class JobOrchestrator:
     """
     Minimal orchestrator skeleton. Modules enqueue jobs and subscribe to BUS to mark done/failed.
     You can expand this with concurrency limits, retries, persistence, etc.
     """
+
     def __init__(self) -> None:
         self._jobs: Dict[str, Job] = {}
         self._handlers: Dict[JobKind, Callable[[Job], None]] = {}
 
-    def register_handler(self, kind: JobKind, handler: Callable[[Job], None]) -> None:
+    def register_handler(
+        self, kind: JobKind, handler: Callable[[Job], None]
+    ) -> None:
         self._handlers[kind] = handler
 
     def enqueue(self, job: Job) -> None:

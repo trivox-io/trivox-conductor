@@ -20,30 +20,36 @@ Notes
 """
 
 from __future__ import annotations
-import json, os
+
 import contextlib
+import json
+import os
 from dataclasses import asdict
+
 from .state import CaptureState
 
 
 def _appdata_dir() -> str:
     """
     Determine the application data directory for storing state files.
-    
+
     :return: Path to the appdata storage directory.
     :rtype: str
     """
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    base = os.path.join(current_dir, "..", "..", "..", "..", ".trivox_conductor")
+    base = os.path.join(
+        current_dir, "..", "..", "..", "..", ".trivox_conductor"
+    )
     path = os.path.join(base, "storage")
     os.makedirs(path, exist_ok=True)
     return path
+
 
 class CaptureStateStore:
     """
     Persistence layer for CaptureState using JSON file storage.
     """
-    
+
     def __init__(self, filename: str = "capture_state.json"):
         """
         :param filename: Name of the JSON file for storing state.
@@ -54,7 +60,7 @@ class CaptureStateStore:
     def load(self) -> CaptureState:
         """
         Load the persisted CaptureState from the JSON file.
-        
+
         :return: Loaded CaptureState instance.
         :rtype: CaptureState
         """
@@ -71,7 +77,7 @@ class CaptureStateStore:
     def save(self, state: CaptureState):
         """
         Save the given CaptureState to the JSON file.
-        
+
         :param state: CaptureState instance to persist.
         :type state: CaptureState
         """

@@ -41,7 +41,7 @@ This module defines no I/O; orchestration and policy live in concrete services.
 from __future__ import annotations
 
 from dataclasses import asdict, is_dataclass
-from typing import Generic, TypeVar, Type, Mapping, Any, Optional, Protocol
+from typing import Any, Generic, Mapping, Optional, Protocol, Type, TypeVar
 
 TConf = TypeVar("TConf")
 TAdapter = TypeVar("TAdapter")
@@ -55,15 +55,15 @@ class RegistryProto(Protocol[TAdapter]):
     def get_active(self) -> Optional[TAdapter]:
         """
         Get the currently active adapter instance, or None if not set.
-        
+
         :return: Active adapter instance or None.
         :rtype: Optional[TAdapter]
         """
-        
+
     def set_active(self, name: str):
         """
         Set the active adapter by name.
-        
+
         :param name: Name of the adapter to set as active.
         :type name: str
         """
@@ -72,19 +72,21 @@ class RegistryProto(Protocol[TAdapter]):
 class BaseService(Generic[TConf, TAdapter]):
     """
     Base class for services with typed configuration loading.
-    
+
     :cvar SECTION (str): Configuration section name.
     :cvar MODEL (Type[TConf]): Configuration model class.
     """
 
-    SECTION: str          # override in subclass, e.g. "capture"
-    MODEL: Type[TConf]    # override in subclass, e.g. CaptureSettingsModel
+    SECTION: str  # override in subclass, e.g. "capture"
+    MODEL: Type[TConf]  # override in subclass, e.g. CaptureSettingsModel
 
-    def __init__(self, registry: RegistryProto[TAdapter], settings: Mapping[str, Any]):
+    def __init__(
+        self, registry: RegistryProto[TAdapter], settings: Mapping[str, Any]
+    ):
         """
         :param registry: Adapter registry for the service role.
         :type registry: RegistryProto[TAdapter]
-        
+
         :param settings: Global settings mapping.
         :type settings: Mapping[str, Any]
         """
@@ -94,10 +96,17 @@ class BaseService(Generic[TConf, TAdapter]):
     def _load_config(self, settings: Mapping[str, Any]) -> TConf:
         raw = settings.get(self.SECTION, {}) or {}
         if not isinstance(raw, Mapping):
-            raise TypeError(f"Settings section '{self.SECTION}' must be a mapping")
+            raise TypeError(
+                f"Settings section '{self.SECTION}' must be a mapping"
+            )
         return self.MODEL(**dict(raw))
 
-    def _get_configured_adapter(self, *, overrides: Optional[Mapping[str, Any]] = None, secrets: Optional[Mapping[str, Any]] = None):
+    def _get_configured_adapter(
+        self,
+        *,
+        overrides: Optional[Mapping[str, Any]] = None,
+        secrets: Optional[Mapping[str, Any]] = None,
+    ):
         adapter = self._require_adapter()
         self._configure_adapter(adapter, overrides=overrides or {}, secrets={})
         return adapter
@@ -105,16 +114,27 @@ class BaseService(Generic[TConf, TAdapter]):
     def _require_adapter(self) -> TAdapter:
         adapter = self._registry.get_active()
         if not adapter:
-            raise RuntimeError(f"No active adapter configured for '{self.SECTION}'.")
+            raise RuntimeError(
+                f"No active adapter configured for '{self.SECTION}'."
+            )
         return adapter
 
     def _settings_dict(self) -> Mapping[str, Any]:
         settings = self._settings
-        return asdict(settings) if is_dataclass(settings) else dict(settings)  # supports dataclass or pydantic
+        return (
+            asdict(settings) if is_dataclass(settings) else dict(settings)
+        )  # supports dataclass or pydantic
 
-    def _configure_adapter(self, adapter: TAdapter, *, overrides: Mapping[str, Any] = None, secrets: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def _configure_adapter(
+        self,
+        adapter: TAdapter,
+        *,
+        overrides: Mapping[str, Any] = None,
+        secrets: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
         base = dict(self._settings_dict())
-        if overrides: base.update(overrides)
+        if overrides:
+            base.update(overrides)
         # adapter is assumed to implement .configure(settings, secrets)
         adapter.configure(base, secrets or {})
         return base

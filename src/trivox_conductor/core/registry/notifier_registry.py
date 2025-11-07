@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import Optional, Type
+
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 from trivox_conductor.core.contracts.notifier import NotifierAdapter
+
 
 class NotifierRegistry(EndpointRegistry[NotifierAdapter]):
     endpoint_base: type = NotifierAdapter
@@ -26,5 +29,7 @@ class NotifierRegistry(EndpointRegistry[NotifierAdapter]):
         if cls._active is None:
             return None
         if cls._active_instance is None:
-            cls._active_instance = cls.instantiate(cls._active)  # from EndpointRegistry
+            cls._active_instance = cls.instantiate(
+                cls._active
+            )  # from EndpointRegistry
         return cls._active_instance

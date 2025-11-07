@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import Optional, Type
+
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 from trivox_conductor.core.contracts.mux import MuxAdapter
+
 
 class MuxRegistry(EndpointRegistry[MuxAdapter]):
     endpoint_base: type = MuxAdapter
@@ -26,5 +29,7 @@ class MuxRegistry(EndpointRegistry[MuxAdapter]):
         if cls._active is None:
             return None
         if cls._active_instance is None:
-            cls._active_instance = cls.instantiate(cls._active)  # from EndpointRegistry
+            cls._active_instance = cls.instantiate(
+                cls._active
+            )  # from EndpointRegistry
         return cls._active_instance

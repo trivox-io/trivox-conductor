@@ -1,7 +1,8 @@
-
+from trivox_conductor.common.base_processor import (
+    TrivoxCaptureCommandProcessor,
+)
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
-from trivox_conductor.common.base_processor import TrivoxCaptureCommandProcessor
 from trivox_conductor.core.registry.color_registry import ColorRegistry
 
 from .services import ColorService
@@ -11,10 +12,10 @@ class ColorCommandProcessor(TrivoxCaptureCommandProcessor):
     """
     Command processor for Color module commands.
     """
-    
+
     def __init__(self, **kwargs):
         self._action: str = kwargs.get("action", "")
-    
+
     def run(self):
         # Implement the command processing logic here
         logger.debug("Running ColorCommandProcessor")

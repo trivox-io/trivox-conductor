@@ -5,14 +5,9 @@ corresponding registry classes.
 
 from __future__ import annotations
 
-from typing import (
-    Type,
-    Dict,
-)
-
+from typing import Dict, Type
 
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
-
 
 # type: role string -> concrete registry subclass (e.g. CaptureRegistry)
 ROLE_REGISTRIES: Dict[str, Type["EndpointRegistry"]] = {}

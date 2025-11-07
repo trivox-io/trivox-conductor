@@ -1,4 +1,3 @@
-
 from trivox_conductor.ui.app import TrivoxInspectorApp
 
 

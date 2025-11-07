@@ -1,16 +1,16 @@
-
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from trivox_conductor.common.settings.settings_registry import register_setting
+from dataclasses import asdict, dataclass
+
 from trivox_conductor.common.settings.base_settings import BaseSettings
+from trivox_conductor.common.settings.settings_registry import register_setting
 
 
 @dataclass(frozen=True)
 class ColorSettingsModel:
     """
     Configuration data for the Color module.
-    
+
     :cvar resolve_preset (str): Default DaVinci Resolve preset name.
     :cvar lut_name (str): Default LUT file name.
     :cvar output_dir (str): Default output directory for color graded files.
@@ -26,7 +26,7 @@ class ColorSettings(BaseSettings):
     """
     Settings for the Color module.
     """
-    
+
     name = "color"
 
     def __init__(self):

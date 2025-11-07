@@ -21,16 +21,17 @@ Notes
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from trivox_conductor.common.settings.settings_registry import register_setting
+from dataclasses import asdict, dataclass
+
 from trivox_conductor.common.settings.base_settings import BaseSettings
+from trivox_conductor.common.settings.settings_registry import register_setting
 
 
 @dataclass(frozen=True)
 class CaptureSettingsModel:
     """
     Configuration data for the Capture module.
-    
+
     :cvar default_scene (str): Default scene name.
     :cvar default_profile (str): Default profile name.
     :cvar beep_on_start_stop (bool): Flag to enable beep sound on start/stop.
@@ -44,7 +45,7 @@ class CaptureSettingsModel:
     # OBS connection
     host: str = "127.0.0.1"
     port: int = 4455
-    password: str = ""          # set in your local secrets or settings
+    password: str = ""  # set in your local secrets or settings
     request_timeout_sec: float = 3.0
 
 
@@ -53,7 +54,7 @@ class CaptureSettings(BaseSettings):
     """
     Settings for the Capture module.
     """
-    
+
     name = "capture"
 
     def __init__(self):

@@ -1,6 +1,7 @@
-
 from trivox_conductor.common.logger import logger
-from trivox_conductor.ui.common.base_window_controller import BaseWindowController
+from trivox_conductor.ui.common.base_window_controller import (
+    BaseWindowController,
+)
 from trivox_conductor.ui.common.controllers_mediator import ControllersMediator
 from trivox_conductor.ui.views.main_window_view import MainWindowView
 

@@ -1,8 +1,9 @@
-
 from __future__ import annotations
-from typing import Dict, Any, Union
+
 import json
 from pathlib import Path
+from typing import Any, Dict, Union
+
 
 class ManifestReader:
     """Pure I/O helpers for reading traveling manifests."""

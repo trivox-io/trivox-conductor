@@ -1,11 +1,15 @@
-
 import sys
+
 from PySide6 import QtWidgets
 
 from trivox_conductor.common.logger import logger
+from trivox_conductor.ui.common.base_window_controller import (
+    BaseWindowController,
+)
 from trivox_conductor.ui.common.controllers_mediator import ControllersMediator
-from trivox_conductor.ui.common.base_window_controller import BaseWindowController
-from trivox_conductor.ui.controllers.main_window_controller import MainWindowController
+from trivox_conductor.ui.controllers.main_window_controller import (
+    MainWindowController,
+)
 
 
 class TrivoxInspectorApp(ControllersMediator):

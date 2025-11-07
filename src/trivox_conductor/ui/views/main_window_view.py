@@ -1,4 +1,3 @@
-
 from PySide6 import QtWidgets
 
 from trivox_conductor.common.logger import logger
