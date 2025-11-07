@@ -25,20 +25,24 @@ Errors
 """
 
 from __future__ import annotations
+
 from typing import Optional, Type
+
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 from trivox_conductor.core.contracts.capture import CaptureAdapter
+
+from .role_registries import register_role_registry
 
 
 class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
     """
     Registry for CaptureAdapter implementations.
-    
+
     :cvar endpoint_base (type): Base class for registered endpoints.
     :cvar _active_adapter (Optional[str]): Name of the currently active adapter.
     :cvar _active_instance (Optional[CaptureAdapter]): Cached instance of the active adapter.
     """
-    
+
     endpoint_base: type = CaptureAdapter
     _active_adapter: Optional[str] = None
     _active_instance: Optional[CaptureAdapter] = None  # cached instance
@@ -47,10 +51,10 @@ class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
     def set_active(cls, name: str):
         """
         Set the active capture adapter by name.
-        
+
         :param name: Name of the adapter to set as active.
         :type name: str
-        
+
         :raises KeyError: If the adapter name is not registered.
         """
         if name not in cls._registry:
@@ -62,7 +66,7 @@ class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
     def get_active_class(cls) -> Optional[Type[CaptureAdapter]]:
         """
         Get the class of the currently active capture adapter.
-        
+
         :return: Active adapter class or None if not set.
         :rtype: Optional[Type[CaptureAdapter]]
         """
@@ -74,12 +78,20 @@ class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
     def get_active(cls) -> Optional[CaptureAdapter]:
         """
         Get the singleton instance of the currently active capture adapter.
-        
+
         :return: Active adapter instance or None if not set.
         :rtype: Optional[CaptureAdapter]
         """
         if cls._active_adapter is None:
             return None
         if cls._active_instance is None:
-            cls._active_instance = cls.instantiate(cls._active_adapter)  # from EndpointRegistry
+            cls._active_instance = cls.instantiate(
+                cls._active_adapter
+            )  # from EndpointRegistry
         return cls._active_instance
+
+
+register_role_registry("capture", CaptureRegistry)
+
+
+register_role_registry("capture", CaptureRegistry)

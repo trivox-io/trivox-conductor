@@ -9,23 +9,11 @@ from trivox_conductor.common.logger import logger
 from trivox_conductor.common.logging import setup_logging
 from trivox_conductor.common.module_loader import load_all_modules
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.core.registry import ROLE_REGISTRIES
 from trivox_conductor.core.registry.base_loader import (
     import_adapter_from_descriptor,
     load_descriptors,
 )
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
-
-# TODO: Make this registry dynamic based on available roles
-# central mapping: plugin role -> registry
-ROLE_REGISTRIES = {
-    "capture": CaptureRegistry,
-    # "watcher": WatcherRegistry,
-    # "mux": MuxRegistry,
-    # "color": ColorRegistry,
-    # "uploader": UploaderRegistry,
-    # "notifier": NotifierRegistry,
-    # "ai": AIRegistry,
-}
 
 
 def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
