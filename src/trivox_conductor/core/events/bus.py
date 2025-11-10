@@ -8,6 +8,8 @@ import threading
 from collections import defaultdict
 from typing import Any, Callable, Dict, List
 
+from trivox_conductor.common.logger import logger
+
 Subscriber = Callable[[str, Dict[str, Any]], None]
 
 
@@ -30,6 +32,12 @@ class EventBus:
         """
         with self._lock:
             self._subs[topic].append(fn)
+        logger.debug(
+            "BUS.subscribe: topic=%r handler=%r (total=%d)",
+            topic,
+            fn,
+            len(self._subs[topic]),
+        )
 
     def publish(self, topic: str, payload: Dict[str, Any]):
         """
@@ -43,11 +51,19 @@ class EventBus:
         """
         with self._lock:
             subs = list(self._subs.get(topic, ()))
+        logger.debug(
+            "BUS.publish: topic=%r handlers=%d payload=%s",
+            topic,
+            len(subs),
+            payload,
+        )
         for fn in subs:
             try:
-                fn(topic, payload)
+                fn(payload)
             except Exception:
-                pass  # log in real impl
+                logger.exception(
+                    "Error in BUS subscriber for topic %r: %r", topic, fn
+                )
 
 
 BUS = EventBus()

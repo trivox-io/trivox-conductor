@@ -165,7 +165,9 @@ class OBSAdapter(CaptureAdapter):
                     getattr(it, "profile_name", None)
                     or getattr(it, "profileName", None)
                 )
-        return [p for p in out if p]
+        result = [p for p in out if p]
+        logger.debug("OBS profiles resolved: %s", result)
+        return result
 
     def select_scene(self, name: str):
         if not name:
@@ -191,6 +193,8 @@ class OBSAdapter(CaptureAdapter):
     def start_capture(self):
         c = self._ensure_client()
         try:
+            # Apply mixer settings *before* we start recording
+            self._apply_mixer(c)
             c.start_record()  # StartRecord
         except obs_err.OBSSDKTimeoutError as e:
             BUS.publish(
@@ -230,3 +234,47 @@ class OBSAdapter(CaptureAdapter):
             # last fallback if response was returned as plain dict somewhere upstream
             active = getattr(res, "outputActive", False)
         return bool(active)
+
+    def _apply_mixer(self, c: obsws.ReqClient) -> None:
+        """
+        Apply simple mixer config based on settings:
+
+          - desktop_source_name: str
+          - mic_source_name: str
+          - capture_desktop_audio: bool (default True)
+          - capture_mic_audio: bool (default False)
+
+        We implement this as mute/unmute on the corresponding inputs.
+        """
+        desktop_name = self._settings.get("desktop_source_name")
+        mic_name = self._settings.get("mic_source_name")
+
+        desktop_on = bool(self._settings.get("capture_desktop_audio", True))
+        mic_on = bool(self._settings.get("capture_mic_audio", False))
+
+        # Desktop
+        if desktop_name:
+            try:
+                # mute when we *don’t* want to capture
+                c.set_input_mute(desktop_name, not desktop_on)
+                logger.debug(
+                    "obs.mixer.desktop: %s -> %s",
+                    desktop_name,
+                    "ON" if desktop_on else "MUTED",
+                )
+            except Exception as e:
+                logger.warning(
+                    "obs.mixer.desktop_failed - %s: %s", desktop_name, e
+                )
+
+        # Mic
+        if mic_name:
+            try:
+                c.set_input_mute(mic_name, not mic_on)
+                logger.debug(
+                    "obs.mixer.mic: %s -> %s",
+                    mic_name,
+                    "ON" if mic_on else "MUTED",
+                )
+            except Exception as e:
+                logger.warning("obs.mixer.mic_failed - %s: %s", mic_name, e)

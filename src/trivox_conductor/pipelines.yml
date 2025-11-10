@@ -1,0 +1,21 @@
+pipelines:
+  ig_ready:
+    label: "IG-ready clip"
+    entry: "mux"
+    stages:
+      mux:
+        kind: "MUX"
+        waits_for_topic: "REPLAY_RENDER_DETECTED"
+        next_stages: ["color"]
+      color:
+        kind: "COLOR"
+        waits_for_topic: "MUX_DONE"
+        next_stages: ["upload"]
+      upload:
+        kind: "UPLOAD"
+        waits_for_topic: "COLOR_DONE"
+        next_stages: ["notify"]
+      notify:
+        kind: "NOTIFY"
+        waits_for_topic: "UPLOAD_DONE"
+        next_stages: []

@@ -11,7 +11,16 @@ profiles:
           enforce_mc_foreground: true
           record_dir: "C:/Users/USUARIO/Videos"
 
+          auto_launch_obs: true
+          obs_launch_wait_sec: 15.0
+          
+          capture_desktop_audio: true
+          capture_mic_audio: false 
+
         preflights:
+          - id: "capture.obs_launch"
+            required: true
+
           - id: "capture.disk_space"
             required: true
             params:
@@ -29,3 +38,14 @@ profiles:
         name: "replaywatcheradapter"
         overrides:
           watch_path: "C:/Users/USUARIO/Videos"
+
+    pipelines:
+      on_replay_detected: "ig_ready"
+      on_capture_stopped: "handoff"
+
+    hooks:
+      notify:
+        capture_started: true
+        capture_stopped: true
+      watcher:
+        start_on_capture_started: true

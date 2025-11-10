@@ -137,17 +137,15 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         """
         if not session_id:
             raise ValueError("session_id is required")
-        if self._state.is_recording:
-            logger.info(
-                f"capture.already_recording - {self._state.session_id}"
-            )
-            return
 
+        # Build merged config (base settings + overrides + session_id)
         cfg_dict = asdict(self._settings)
         cfg_dict["session_id"] = session_id
         if overrides:
             cfg_dict.update(overrides)
+
         adapter = self._get_configured_adapter(overrides=cfg_dict)
+
         # --- Preflight: collect failures and bail once, with a helpful message ---
         failures = run_preflights(
             role="capture",
@@ -170,26 +168,65 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
                 "capture.preflight_soft_fail - %s: %s", f.id, f.message
             )
 
+        # You can keep this before or after preflights; I’m leaving it here as you had it
+        if self._state.is_recording:
+            logger.info(
+                "capture.already_recording - %s", self._state.session_id
+            )
+            return
+
         # --- Safe to proceed: select scene/profile, then start ---
         try:
-            chosen_scene = scene or self._settings.default_scene
+            # Prefer explicit CLI args, then pipeline/config overrides, then model defaults
+            chosen_scene = (
+                scene
+                or cfg_dict.get("default_scene")
+                or getattr(self._settings, "default_scene", None)
+            )
+            chosen_profile = (
+                profile
+                or cfg_dict.get("default_profile")
+                or getattr(self._settings, "default_profile", None)
+            )
+
+            logger.debug(
+                "capture.selecting - scene=%r (arg=%r, cfg=%r), "
+                "profile=%r (arg=%r, cfg=%r)",
+                chosen_scene,
+                scene,
+                cfg_dict.get("default_scene"),
+                chosen_profile,
+                profile,
+                cfg_dict.get("default_profile"),
+            )
+
             if chosen_scene:
                 adapter.select_scene(chosen_scene)
-            chosen_profile = profile or self._settings.default_profile
             if chosen_profile:
                 adapter.select_profile(chosen_profile)
+
         except Exception as e:
             logger.error(
-                f"capture.select_failed - {str(e)} - Scene: {chosen_scene}, Profile: {chosen_profile}"
+                "capture.select_failed - %s - Scene: %r, Profile: %r",
+                str(e),
+                chosen_scene,
+                chosen_profile,
             )
             raise
 
         adapter.start_capture()
         self._state.start(session_id)
         self._store.save(self._state)
+        logger.info("capture.started - session_id=%s", self._state.session_id)
         BUS.publish(
             topics.MANIFEST_UPDATED,
-            {"session_id": session_id, "event": "capture.start"},
+            {
+                "session_id": session_id,
+                "event": "capture.start",
+                "profile_key": (
+                    pipeline_profile.key if pipeline_profile else None
+                ),
+            },
         )
 
     def stop(self, *, overrides: Optional[Mapping[str, Any]] = None):
@@ -219,3 +256,13 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         adapter.stop_capture()
         self._state.stop()
         self._store.save(self._state)
+
+        BUS.publish(
+            topics.MANIFEST_UPDATED,
+            {
+                "session_id": self._state.session_id,
+                "event": "capture.stop",
+                # we don’t know profile_key here yet, so leave None or resolve later
+                "profile_key": None,
+            },
+        )

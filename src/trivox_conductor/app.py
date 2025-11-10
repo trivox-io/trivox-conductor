@@ -9,6 +9,7 @@ from trivox_conductor.common.logger import logger
 from trivox_conductor.common.logging import setup_logging
 from trivox_conductor.common.module_loader import load_all_modules
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.core.observers.observers_loader import load_all_observers
 from trivox_conductor.core.registry import ROLE_REGISTRIES
 from trivox_conductor.core.registry.base_loader import (
     import_adapter_from_descriptor,
@@ -74,6 +75,7 @@ def initialize():
     )
     load_all_modules()
     load_local_plugins()
+    load_all_observers()
     logger.info("Trivox Conductor application started.")
 
 

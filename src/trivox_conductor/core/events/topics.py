@@ -20,7 +20,10 @@ subscribe to or publish events under.
 :cvar NOTIFY_FAILED: Event topic for when a notification fails.
 :cvar AI_OPTIONS_READY: Event topic for when AI options are ready.
 :cvar MANIFEST_UPDATED: Event topic for when the manifest is updated.
+:cvar USER_NOTIFICATION: Event topic for user notifications.
 """
+
+from __future__ import annotations
 
 CAPTURE_STARTED = "capture.started"
 CAPTURE_STOPPED = "capture.stopped"
@@ -45,3 +48,5 @@ NOTIFY_FAILED = "notify.failed"
 
 AI_OPTIONS_READY = "ai.options.ready"
 MANIFEST_UPDATED = "manifest.updated"
+
+USER_NOTIFICATION = "user.notification"

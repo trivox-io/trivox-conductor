@@ -53,3 +53,11 @@ class PipelineProfile:
     key: str
     label: str
     adapters: Dict[str, Adapter] = field(default_factory=dict)
+
+    # NEW:
+    pipelines: Dict[str, str] = field(
+        default_factory=dict
+    )  # e.g. on_capture_stopped -> "handoff"
+    hooks: Dict[str, Any] = field(
+        default_factory=dict
+    )  # arbitrary hook config

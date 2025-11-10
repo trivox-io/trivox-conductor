@@ -62,7 +62,11 @@ class ProfileManager:
                     preflights=preflights,
                 )
             profiles[key] = PipelineProfile(
-                key=key, label=cfg["label"], adapters=adapters
+                key=key,
+                label=cfg["label"],
+                adapters=adapters,
+                pipelines=cfg.get("pipelines", {}) or {},
+                hooks=cfg.get("hooks", {}) or {},
             )
         return cls(profiles)
 

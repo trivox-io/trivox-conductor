@@ -8,6 +8,7 @@ from trivox_conductor.common.commands.base_command_processor import (
     BaseCommandProcessor,
 )
 from trivox_conductor.common.logger import logger
+from trivox_conductor.common.settings import settings
 from trivox_conductor.core.profiles.profile_injector import (
     ResolvedCaptureProfile,
     resolve_capture_profile,

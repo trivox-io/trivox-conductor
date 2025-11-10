@@ -53,9 +53,6 @@ class SessionIDArgument(ArgumentType):
     Standardized 'session_id' CLI argument.
     """
 
-    def _generate_default_session_id(self) -> str:
-        return "20251029_1050_s0_e0_test"
-
     def __init__(
         self,
     ):
@@ -63,7 +60,7 @@ class SessionIDArgument(ArgumentType):
             "session_id",
             str,
             "Session ID",
-            default=self._generate_default_session_id(),
+            default=None,
         )
 
 
