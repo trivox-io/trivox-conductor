@@ -22,10 +22,12 @@ by the application bootstrap.
 from .commands import CaptureCommand
 from .preflights import DiskSpaceCheck, WindowForegroundCheck
 from .settings import CaptureSettings
+from .ui import CaptureMainView
 
 __all__ = [
     "CaptureCommand",
     "CaptureSettings",
     "DiskSpaceCheck",
     "WindowForegroundCheck",
+    "CaptureMainView",
 ]

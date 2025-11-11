@@ -63,7 +63,7 @@ def load_all_modules():
     """
 
     # Define required files for dynamic loading
-    required_files = ["commands.py", "strategies.py", "settings.py"]
+    required_files = ["commands.py", "strategies.py", "settings.py", "ui.py"]
 
     # List of module names to import
     module_names = [
