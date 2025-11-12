@@ -42,7 +42,8 @@ class NotificationObserver(BaseObserver):
             )
             return
 
-        BUS.subscribe(topics.MANIFEST_UPDATED, self._on_manifest_updated)
+        BUS.subscribe(topics.CAPTURE_STARTED, self._on_capture_started)
+        BUS.subscribe(topics.CAPTURE_STOPPED, self._on_capture_stopped)
         logger.debug(
             "NotificationObserver attached for profile %s", self._profile.key
         )
@@ -58,22 +59,22 @@ class NotificationObserver(BaseObserver):
             },
         )
 
-    def _on_manifest_updated(self, payload: Dict[str, Any]) -> None:
-        logger.debug("NotificationObserver received MANIFEST_UPDATED event")
-        event = payload.get("event")
+    def _on_capture_started(self, payload: Dict[str, Any]) -> None:
+        logger.debug("NotificationObserver received CAPTURE_STARTED event")
         session_id = payload.get("session_id")
 
-        if event == "capture.start" and self._notify_cfg.get(
-            "capture_started", False
-        ):
+        if self._notify_cfg.get("capture_started", False):
             self._emit(
                 title="Capture started",
                 message=f"Session {session_id} is now recording.",
                 payload=payload,
             )
-        elif event == "capture.stop" and self._notify_cfg.get(
-            "capture_stopped", False
-        ):
+
+    def _on_capture_stopped(self, payload: Dict[str, Any]) -> None:
+        logger.debug("NotificationObserver received CAPTURE_STOPPED event")
+        session_id = payload.get("session_id")
+
+        if self._notify_cfg.get("capture_stopped", False):
             self._emit(
                 title="Capture stopped",
                 message=f"Session {session_id} has stopped recording.",

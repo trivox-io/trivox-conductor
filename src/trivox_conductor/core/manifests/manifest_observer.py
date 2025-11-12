@@ -16,7 +16,7 @@ from .manifest_service import ManifestService
 
 class ManifestObserver(BaseObserver):
     """
-    Observer that reacts to MANIFEST_UPDATED events and writes them
+    Observer that reacts to CAPTURE_STARTED events and writes them
     into SessionManifest via ManifestService.
     """
 
@@ -36,29 +36,37 @@ class ManifestObserver(BaseObserver):
             )
             return
         logger.debug(
-            "ManifestObserver subscribing to topic %r", topics.MANIFEST_UPDATED
+            "ManifestObserver subscribing to topic %r", topics.CAPTURE_STARTED
         )
-        BUS.subscribe(topics.MANIFEST_UPDATED, self._on_manifest_updated)
+        # BUS.subscribe(topics.CAPTURE_STARTED, self._on_capture_started)
+        # BUS.subscribe(topics.CAPTURE_STOPPED, self._on_capture_stopped)
         logger.debug("ManifestObserver attached")
 
-    def _on_manifest_updated(self, payload: Dict[str, Any]) -> None:
-        logger.debug("ManifestObserver received MANIFEST_UPDATED event")
-        session_id = payload.get("session_id")
-        event = payload.get("event")
-        profile_key = payload.get("profile_key")
+    def _on_capture_started(self, payload: Dict[str, Any]) -> None:
+        logger.debug("ManifestObserver received CAPTURE_STARTED event")
+        session_id = payload.pop("session_id")
+        profile_key = payload.pop("profile_key", None)
+        event = topics.CAPTURE_STARTED
 
-        if not session_id or not event:
+        if not session_id:
             logger.debug("manifest.observer.skip - missing session_id/event")
             return
 
         # lazily call into ManifestService
-        if event == "capture.start":
-            self._service.start_session(session_id, profile_key)
-
+        self._service.start_session(session_id, profile_key)
         self._service.append_event(session_id, event, payload)
 
-        if event == "capture.stop":
-            self._service.close_session(session_id)
+    def _on_capture_stopped(self, payload: Dict[str, Any]) -> None:
+        logger.debug("ManifestObserver received CAPTURE_STOPPED event")
+        session_id = payload.pop("session_id")
+        event = topics.CAPTURE_STOPPED
+
+        if not session_id:
+            logger.debug("manifest.observer.skip - missing session_id/event")
+            return
+
+        self._service.append_event(session_id, event, payload)
+        self._service.close_session(session_id)
 
 
 # register in the registry

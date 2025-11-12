@@ -28,15 +28,17 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
     ACTION_MAP: Mapping[str, str]  # e.g. {"start": "start", "stop": "stop"}
     _overrides: Optional[dict[str, Any]] = None
     _pipeline_profile: Optional[ResolvedCaptureProfile] = None
+    _cli_session_id: Optional[str] = None
+    _session_id: Optional[str] = None
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
-        self._pipeline_profile_key: Optional[str] = self._kwargs.get(
+        self._pipeline_profile_key: Optional[str] = self._kwargs.pop(
             "pipeline_profile"
         )
 
         # TODO: Implement profile application logic
-        self._config_file_path: Optional[str] = self._kwargs.get("config")
+        self._config_file_path: Optional[str] = self._kwargs.pop("config")
 
     def set_pipeline_profile(self, overrides: dict[str, Any]):
         """Set connection overrides for the processor."""
@@ -45,9 +47,9 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
             self._pipeline_profile_key,
             overrides=overrides,
         )
-        logger.warning(f"Resolved pipeline profile: {resolved.profile}")
+        logger.debug(f"Resolved pipeline profile: {resolved.profile}")
         self._overrides = resolved.overrides
-        logger.warning(
+        logger.debug(
             f"Using pipeline profile: {resolved.profile} "
             f"(overrides: {self._overrides})"
         )

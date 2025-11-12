@@ -218,16 +218,15 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self._state.start(session_id)
         self._store.save(self._state)
         logger.info("capture.started - session_id=%s", self._state.session_id)
-        BUS.publish(
-            topics.MANIFEST_UPDATED,
-            {
-                "session_id": session_id,
-                "event": "capture.start",
-                "profile_key": (
-                    pipeline_profile.key if pipeline_profile else None
-                ),
-            },
-        )
+        # BUS.publish(
+        #     topics.CAPTURE_STARTED,
+        #     {
+        #         "session_id": session_id,
+        #         "profile_key": (
+        #             pipeline_profile.key if pipeline_profile else None
+        #         ),
+        #     },
+        # )
 
     def stop(self, *, overrides: Optional[Mapping[str, Any]] = None):
         """
@@ -257,12 +256,9 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self._state.stop()
         self._store.save(self._state)
 
-        BUS.publish(
-            topics.MANIFEST_UPDATED,
-            {
-                "session_id": self._state.session_id,
-                "event": "capture.stop",
-                # we don’t know profile_key here yet, so leave None or resolve later
-                "profile_key": None,
-            },
-        )
+        # BUS.publish(
+        #     topics.CAPTURE_STOPPED,
+        #     {
+        #         "session_id": self._state.session_id,
+        #     },
+        # )

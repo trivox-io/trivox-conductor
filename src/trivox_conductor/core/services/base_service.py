@@ -108,7 +108,9 @@ class BaseService(Generic[TConf, TAdapter]):
         secrets: Optional[Mapping[str, Any]] = None,
     ):
         adapter = self._require_adapter()
-        self._configure_adapter(adapter, overrides=overrides or {}, secrets={})
+        self._configure_adapter(
+            adapter, overrides=overrides or {}, secrets=secrets or {}
+        )
         return adapter
 
     def _require_adapter(self) -> TAdapter:

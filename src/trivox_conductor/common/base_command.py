@@ -82,7 +82,7 @@ class TrivoxConductorCommand(BaseCommand):
             "pipeline_profile",
             str,
             "Profile to select before start",
-            default="minecraft_obs_replay",
+            default="default_profile",
         ),
     ]
 

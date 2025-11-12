@@ -56,17 +56,15 @@ class WatcherAutoStartObserver(BaseObserver):
             )
             return
 
-        BUS.subscribe(topics.MANIFEST_UPDATED, self._on_manifest_updated)
+        # BUS.subscribe(topics.CAPTURE_STARTED, self._on_capture_started)
         logger.debug(
             "WatcherAutoStartObserver attached for profile %s",
             self._profile.key,
         )
 
-    def _on_manifest_updated(self, payload: Dict[str, Any]) -> None:
-        logger.debug(
-            "WatcherAutoStartObserver received MANIFEST_UPDATED event"
-        )
-        if payload.get("event") != "capture.start":
+    def _on_capture_started(self, payload: Dict[str, Any]) -> None:
+        logger.debug("WatcherAutoStartObserver received CAPTURE_STARTED event")
+        if payload.get("event") != "capture.started":
             return
         session_id: Optional[str] = payload.get("session_id")
         logger.info(

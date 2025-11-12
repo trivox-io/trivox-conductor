@@ -27,8 +27,8 @@ from trivox_conductor.common.base_processor import (
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
 from trivox_conductor.core.manifests.manifest_service import ManifestService
-from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.observers.bootstrap import attach_all_observers
+from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.session.session_manager import SessionManager
@@ -50,34 +50,30 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
         "list_scenes": "list_scenes",
         "list_profiles": "list_profiles",
     }
-    _session_id: str
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Optional selections
-        self._cli_session_id: str = self._kwargs.get("session_id", None)
-        self._scene = self._kwargs.get("scene")
-        self._profile = self._kwargs.get("profile")
+        self._cli_session_id = self._kwargs.pop("session_id", None)
+
+        self._scene = self._kwargs.pop("scene")
+        self._profile = self._kwargs.pop("profile")
 
         # Connection overrides (only include if provided)
         overrides = {
             k: v
             for k, v in {
-                "host": self._kwargs.get("host"),
-                "port": self._kwargs.get("port"),
-                "password": self._kwargs.get("password"),
-                "request_timeout_sec": self._kwargs.get("request_timeout_sec"),
+                "host": self._kwargs.pop("host"),
+                "port": self._kwargs.pop("port"),
+                "password": self._kwargs.pop("password"),
+                "request_timeout_sec": self._kwargs.pop("request_timeout_sec"),
             }.items()
             if v is not None
         }
         self.set_pipeline_profile(overrides)
         logger.debug("Setup observers context")
-        manifest_service = ManifestService(
-            # optionally pass custom root: Path("..."),
-        )
-        watcher_service = WatcherService(
-            WatcherRegistry, settings=settings.get("watcher", {})
-        )
+        manifest_service = ManifestService()
+        watcher_service = WatcherService(WatcherRegistry, settings=settings)
 
         ctx = ObserverContext(
             profile_key=self._pipeline_profile_key,
@@ -111,7 +107,7 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
         logger.debug("Running CaptureCommandProcessor")
         session = SessionManager.ensure_session(
             session_id=self._cli_session_id,
-            label=f"{self._pipeline_profile_key or 'capture'}",
+            label=f"{self._pipeline_profile_key}",
         )
         self._session_id = session.id
         return super().run()

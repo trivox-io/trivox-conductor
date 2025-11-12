@@ -14,87 +14,52 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>9</y>
-      <width>971</width>
-      <height>521</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="mainV">
-     <property name="sizeConstraint">
-      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
-     </property>
-     <item>
-      <widget class="QWidget" name="mainRow" native="true">
-       <widget class="QWidget" name="horizontalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>-1</x>
-          <y>-1</y>
-          <width>991</width>
-          <height>541</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="mainH">
-         <item alignment="Qt::AlignmentFlag::AlignLeft">
-          <widget class="QListWidget" name="navList">
-           <item>
-            <property name="text">
-             <string>Dashboard</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Capture</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Replay</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Cloor &amp; Handoff</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>AI</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Plugins</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Logs</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Settings</string>
-            </property>
-           </item>
-          </widget>
-         </item>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QWidget" name="mainRow" native="true">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <layout class="QHBoxLayout" name="mainRowLayout">
+       <item>
+        <widget class="QListWidget" name="navList">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>300</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <item>
-          <widget class="QStackedWidget" name="stack">
-           <widget class="QWidget" name="pageDashboard">
+          <property name="text">
+           <string>Dashboard</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="stack">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <widget class="QWidget" name="pageDashboard">
+          <layout class="QVBoxLayout" name="pageDashboardLayout">
+           <item>
             <widget class="QScrollArea" name="dashScroll">
-             <property name="geometry">
-              <rect>
-               <x>-1</x>
-               <y>-1</y>
-               <width>731</width>
-               <height>541</height>
-              </rect>
-             </property>
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
@@ -103,100 +68,83 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>729</width>
-                <height>539</height>
+                <width>682</width>
+                <height>490</height>
                </rect>
               </property>
-              <widget class="QWidget" name="gridLayoutWidget">
-               <property name="geometry">
-                <rect>
-                 <x>-1</x>
-                 <y>-1</y>
-                 <width>711</width>
-                 <height>521</height>
-                </rect>
-               </property>
-               <layout class="QGridLayout" name="gridLayout">
-                <item row="0" column="1">
-                 <widget class="QFrame" name="recorder_and_session">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QFrame" name="replay_watch">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QFrame" name="quick_actions">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QFrame" name="recent_outputs">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QFrame" name="pipeline_queue">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QFrame" name="system_health">
-                  <property name="frameShape">
-                   <enum>QFrame::Shape::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Shadow::Raised</enum>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="0" column="0">
+                <widget class="QFrame" name="quick_actions">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QFrame" name="recorder_and_session">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QFrame" name="replay_watch">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QFrame" name="pipeline_queue">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QFrame" name="recent_outputs">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QFrame" name="system_health">
+                 <property name="frameShape">
+                  <enum>QFrame::Shape::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Shadow::Raised</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </widget>
-           </widget>
-           <widget class="QWidget" name="pageReplay"/>
-           <widget class="QWidget" name="pageColorHandoff"/>
-           <widget class="QWidget" name="pageAI"/>
-           <widget class="QWidget" name="pagePlugins"/>
-           <widget class="QWidget" name="pageLogs"/>
-           <widget class="QWidget" name="pageSettings"/>
-           <widget class="QWidget" name="pageCapture"/>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

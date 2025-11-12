@@ -1,5 +1,5 @@
 profiles:
-  minecraft_obs_replay:
+  default_profile:
     label: "Minecraft (OBS)"
 
     adapters:

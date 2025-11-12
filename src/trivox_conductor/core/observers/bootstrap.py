@@ -16,7 +16,7 @@ def attach_all_observers(context: ObserverContext) -> None:
     logger.debug(f"Observers {list(ObserverRegistry.all())}")
     for name in ObserverRegistry.names():
         cls = ObserverRegistry.get(name)
-        logger.error("Attaching observer '%s'...", name)
+        logger.debug("Attaching observer '%s'...", name)
         logger.debug("With class: %s", cls)
         try:
             observer: BaseObserver = cls(context)  # type: ignore[call-arg]

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Protocol
+from typing import Callable, Dict, Optional, Protocol
 
 
 class ViewFactory(Protocol):
     def __call__(self, *, context: dict) -> object: ...
 
     # PySide widgets will satisfy this but core doesn’t know they’re widgets
+
+
+ViewCondition = Callable[[dict], bool]
 
 
 @dataclass
@@ -18,6 +21,7 @@ class ViewDescriptor:
     factory: ViewFactory
     order: int = 0
     icon_name: Optional[str] = None
+    visible_if: Optional[ViewCondition] = None
 
 
 class ViewRegistry:

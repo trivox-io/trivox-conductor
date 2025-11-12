@@ -26,6 +26,8 @@ import json
 import os
 from dataclasses import asdict
 
+import trivox_conductor.constants as trivox_constants
+
 from .state import CaptureState
 
 
@@ -36,10 +38,7 @@ def _appdata_dir() -> str:
     :return: Path to the appdata storage directory.
     :rtype: str
     """
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    base = os.path.join(
-        current_dir, "..", "..", "..", "..", ".trivox_conductor"
-    )
+    base = os.path.join(trivox_constants.ROOT_DIR, ".trivox")
     path = os.path.join(base, "storage")
     os.makedirs(path, exist_ok=True)
     return path
@@ -91,4 +90,5 @@ class CaptureStateStore:
         Remove the persisted CaptureState file if it exists.
         """
         with contextlib.suppress(FileNotFoundError):
+            os.remove(self._path)
             os.remove(self._path)
