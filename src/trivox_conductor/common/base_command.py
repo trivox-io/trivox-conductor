@@ -100,18 +100,6 @@ class TrivoxConductorCommand(BaseCommand):
                 merged.append(common)
         return merged
 
-    def set_verbose(self, verbose: bool):
-        """
-        Set the verbose mode for the command.
-
-        :param verbose: Whether to enable verbose mode.
-        :type verbose: bool
-        """
-        if verbose:
-            logger.setLevel("DEBUG")
-            logger.debug("Verbose mode enabled")
-            logger.debug(f"Executing {self.name} in verbose mode: {verbose}")
-
     def set_processor(self, processor: BaseCommandProcessor):
         """
         Set the processor for the command.
@@ -145,6 +133,4 @@ class TrivoxConductorCommand(BaseCommand):
         """
         Execute the command.
         """
-        verbose = kwargs.pop("verbose", False)
-        self.set_verbose(verbose)
         return self._execute(**kwargs)
