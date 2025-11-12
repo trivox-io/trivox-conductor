@@ -16,6 +16,7 @@ dependencies = [
     "PyYAML~=6.0",
     "PySide6~=6.8",
     "obsws-python (>=1.8.0,<2.0.0)",
+    "toml (>=0.10.2,<0.11.0)",
 ]
 
 [project.optional-dependencies]

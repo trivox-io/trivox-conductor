@@ -27,7 +27,7 @@ from trivox_conductor.common.base_processor import (
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
 from trivox_conductor.core.manifests.manifest_service import ManifestService
-from trivox_conductor.core.observers.base_observer import ObserverContext
+from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.observers.bootstrap import attach_all_observers
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.registry.watcher_registry import WatcherRegistry

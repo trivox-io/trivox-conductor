@@ -2,14 +2,22 @@
 Main application entry point for Trivox Conductor.
 """
 
+from __future__ import annotations
+
 import os
 from typing import Optional
 
+import trivox_conductor.constants as trivox_constants
+from trivox_conductor.common.dynamic_loader import DynamicLoader
 from trivox_conductor.common.logger import logger
-from trivox_conductor.common.logging import setup_logging
-from trivox_conductor.common.module_loader import load_all_modules
+from trivox_conductor.common.logging import setup_logging, resolve_log_levels
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
-from trivox_conductor.core.observers.observers_loader import load_all_observers
+from trivox_conductor.common.settings import settings
+from trivox_conductor.core.bootstrap import (
+    ModulesLoader,
+    ObserversLoader,
+    PluginsLoader,
+)
 from trivox_conductor.core.registry import ROLE_REGISTRIES
 from trivox_conductor.core.registry.base_loader import (
     import_adapter_from_descriptor,
@@ -48,7 +56,7 @@ def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
     logger.info("Local plugins loaded and registered.")
 
 
-def initialize():
+def initialize(verbose_level: Optional[int] = None) -> None:
     """
     Initialize the Trivox Conductor application.
 
@@ -56,26 +64,33 @@ def initialize():
     - Load all modules to register commands, settings, and strategies.
     - Load local plugins from the 'plugins' directory.
     """
+    app_level, root_level = resolve_log_levels(verbose_level)
+
     setup_logging(
         overrides={
             "handlers": {
                 "file": {
                     "maxBytes": 10485760,
                     "backupCount": 5,
+                    "filename": trivox_constants.LOGGER.file_path,
                 },
             },
-            "root": {"level": "INFO"},
+            "root": {"level": root_level},
             "loggers": {
-                "trivox_conductor": {
-                    "level": "DEBUG",
+                trivox_constants.LOGGER.logger_name: {
+                    "level": app_level,
                     "propagate": True,
                 },
             },
         }
     )
-    load_all_modules()
-    load_local_plugins()
-    load_all_observers()
+
+    loader = DynamicLoader()
+    loader.register(ModulesLoader().build_spec())
+    loader.register(PluginsLoader().build_spec())
+    loader.register(ObserversLoader().build_spec())
+    loader.load_all()
+    settings.populate()
     logger.info("Trivox Conductor application started.")
 
 

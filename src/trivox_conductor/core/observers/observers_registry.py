@@ -4,7 +4,7 @@ from typing import Type
 
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 
-from .base_observer import BaseObserver
+from .observer_base import BaseObserver
 
 
 class ObserverRegistry(EndpointRegistry[BaseObserver]):

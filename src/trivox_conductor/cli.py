@@ -8,8 +8,13 @@ import argparse
 import sys
 from typing import Callable, Optional
 
+import trivox_conductor.constants as trivox_constants
 from trivox_conductor.app import initialize
-from trivox_conductor.common.commands import BaseCLIApp, CLIConfig
+from trivox_conductor.common.commands import (
+    BaseCLIApp,
+    CLIConfig,
+    GlobalParserBuilder,
+)
 from trivox_conductor.ui import run_gui
 
 
@@ -27,9 +32,10 @@ class TrivoxCLI(BaseCLIApp):
         :param gui_callback: The callback function to run the GUI application.
         :type gui_callback: Optional[Callable[[], None]]
         """
-
         self.gui_callback = gui_callback
+
         super().__init__(config)
+        self.build_commands()
         self._add_run_command(self.subparsers)
 
     def _add_run_command(self, subparsers: argparse._SubParsersAction):
@@ -76,7 +82,7 @@ class TrivoxCLI(BaseCLIApp):
         return super().run_command(args)
 
 
-def main():
+def main(argv: Optional[list[str]] = None):
     """
     Main entry point for the CLI application.
 
@@ -85,25 +91,29 @@ def main():
     - Parse the command line arguments.
     - Run the specified command.
     """
+    if argv is None:
+        argv = sys.argv[1:]
+
+    global_parser = GlobalParserBuilder.build_global_parser(
+        trivox_constants.APP.version
+    )
+    global_args, remaining_argv = global_parser.parse_known_args(argv)
 
     # Load all modules to register commands, settings, and strategies.
+    initialize(global_args.verbose)
 
-    # Populate settings and setup the logger
-    initialize()
     # Parse the command line arguments
     cli_app = TrivoxCLI(
         config=CLIConfig(
-            app_name="trivox_conductor",
-            description="Trivox Conductor CLI Application",
-            usage="""
-            DEV: python manage.py <command> [<args>]
-            PROD: trivox_conductor <command> [<args>]
-            """,
+            app_name=trivox_constants.CLI.executable_name,
+            description=trivox_constants.CLI.description,
+            usage=trivox_constants.CLI.usage,
         ),
         gui_callback=run_gui,
     )
-    args = cli_app.parse_args()
-    cli_app.run_command(args)
+    args = cli_app.parse_args(remaining_argv)
+    exit_code = cli_app.run_command(args)
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

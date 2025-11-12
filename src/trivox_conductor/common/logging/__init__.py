@@ -7,13 +7,38 @@ import logging.config
 import queue as _q
 from logging.handlers import QueueHandler, QueueListener
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import yaml
 
 from .configuration_validation import ConfigValidation
 from .logger_utils import LoggerUtils
 from .specs.spec_manager import SpecManager
+
+
+def resolve_log_levels(verbosity: Optional[int]) -> Tuple[str, str]:
+    """
+    Map a verbosity count (-v, -vv, -vvv) to:
+    - app logger level (trivox_conductor)
+    - third-party/root logger level
+    """
+    # Defaults: quiet unless told otherwise
+    app_level = "WARNING"
+    root_level = "WARNING"
+
+    if verbosity is None or verbosity <= 0:
+        return app_level, root_level
+
+    if verbosity == 1:
+        # Basic info for our app, keep third-party quiet
+        return "INFO", "WARNING"
+
+    if verbosity == 2:
+        # Debug for our app, some info from deps
+        return "DEBUG", "INFO"
+
+    # verbosity >= 3: full blast
+    return "DEBUG", "DEBUG"
 
 
 def setup_logging(

@@ -194,3 +194,4 @@ Temporary Items
 # iCloud generated files
 *.icloud
 .trivox_conductor/
+.trivox/

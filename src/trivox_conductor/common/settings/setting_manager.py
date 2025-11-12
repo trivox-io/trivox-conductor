@@ -5,12 +5,14 @@ Handles loading, saving, and merging of settings files.
 
 import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Optional
 
 import yaml
 
 from trivox_conductor.common.settings.setting_merger import SettingMerger
 from trivox_conductor.common.settings.settings_registry import SettingRegistry
+from trivox_conductor.common.utils.paths import ensure_dir, get_settings_dir
 
 
 class SettingsManager(ABC):
@@ -30,30 +32,18 @@ class SettingsManager(ABC):
         - Set the environment variable for the IC Inspector path if it does not exist.
         - Create the settings file if it does not exist.
         """
-        # TODO: Refactor config path logic
-        config_path = os.getenv("TRIVOX_CONFIG_PATH", None)
-        if config_path is None:
-            config_path = os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "..",
-                "..",
-                ".trivox_conductor/settings",
-            )
+        self._settings_dir = ensure_dir(get_settings_dir())
+        self._configuration_descriptor = str(self._settings_dir) + os.sep
 
-        self._configuration_descriptor = os.path.abspath(config_path) + "/"
-
-        self.__ensure_directory()
+        # Your naming remains the same
         self.default_file = self.__set_setting_file(
-            self._configuration_descriptor, "default-settings.yml"
+            self._settings_dir, "default-settings.yml"
         )
         self.user_file = self.__set_setting_file(
-            self._configuration_descriptor, "user-settings.yml"
+            self._settings_dir, "user-settings.yml"
         )
-
         self.settings_file = self.__set_setting_file(
-            self._configuration_descriptor, "settings.yaml"
+            self._settings_dir, "settings.yaml"
         )
 
         self._load_file(self.settings_file)
@@ -76,47 +66,37 @@ class SettingsManager(ABC):
     def save(self):
         """Save the settings data to the settings file."""
 
-    def __ensure_directory(self):
-        """
-        Ensure that the directory exists.
-        """
-        os.makedirs(self._configuration_descriptor, exist_ok=True)
-
-    def __set_setting_file(self, path: str, name: str) -> str:
+    def __set_setting_file(self, base: Path, filename: str) -> Path:
         """
         Set the setting file path.
 
-        :param path: The path to the settings file.
-        :type path: str
+        :param base: The base directory for the settings file.
+        :type base: Path
 
-        :param name: The name of the settings file.
-        :type name: str
+        :param filename: The name of the settings file.
+        :type filename: str
 
         :return: The path to the settings file.
-        :rtype: str
+        :rtype: Path
         """
-        file_path = os.path.join(path, name)
-        file_path = file_path.replace("\\", "/")
-        if not os.path.exists(file_path):
-            with open(file_path, "w", encoding="utf-8") as file:
-                file.write("")
-        return file_path
+        path = base / filename
+        if not path.exists():
+            path.write_text("", encoding="utf-8")  # or create default skeleton
+        return path
 
-    def _load_file(self, file_path: str) -> dict:
+    def _load_file(self, file_path: Path) -> dict:
         """
         Load settings from a YAML file.
 
         :param file_path: The path to the settings file.
-        :type file_path: str
+        :type file_path: Path
 
         :return: The settings data.
         :rtype: dict
         """
-
-        if not os.path.exists(file_path):
+        if not file_path.exists():
             return {}
-        with open(file_path, "r", encoding="utf-8") as file:
-            return yaml.safe_load(file) or {}
+        return yaml.safe_load(file_path.read_text(encoding="utf-8")) or {}
 
     def _save_file(self, file_path: str, data: dict):
         """

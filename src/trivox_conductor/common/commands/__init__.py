@@ -58,4 +58,4 @@ CLI and accessed from the registry as long as the module is imported before
 running the CLI application.
 """
 
-from .cli_app import BaseCLIApp, CLIConfig
+from .cli_app import BaseCLIApp, CLIConfig, GlobalParserBuilder

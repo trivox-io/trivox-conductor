@@ -5,8 +5,9 @@ Command line interface for the IC Inspector tool.
 import argparse
 import os
 import sys
+from ast import Dict, alias
 from dataclasses import dataclass
-from typing import List, Optional, Type
+from typing import Any, Iterable, List, Optional, Type
 
 from .argument_type import coerce_type
 from .base_command import BaseCommand
@@ -20,7 +21,6 @@ class CLIConfig:
     Configuration for the CLI application.
 
     :cvar app_name: Optional[str]: The name of the application.
-    :cvar version: Optional[str]: The version of the application.
     :cvar description: Optional[str]: The description of the application.
     :cvar usage: Optional[str]: The usage string for the application.
     :cvar formatter_class: Optional[Type[argparse.HelpFormatter]]:
@@ -28,7 +28,6 @@ class CLIConfig:
     """
 
     app_name: Optional[str] = None
-    version: Optional[str] = None
     description: Optional[str] = None
     usage: Optional[str] = None
     formatter_class: Optional[Type[argparse.HelpFormatter]] = (
@@ -36,6 +35,155 @@ class CLIConfig:
     )
 
 
+class ParserFactory:
+    """
+    Factory class to create argument parsers for the CLI application.
+    """
+
+    @staticmethod
+    def create_main_parser(config: CLIConfig) -> argparse.ArgumentParser:
+        """
+        Create the main parser for the CLI application.
+
+        :param config: The configuration for the CLI application.
+        :type config: CLIConfig
+
+        :return: The main parser for the CLI application.
+        :rtype: argparse.ArgumentParser
+        """
+        p = argparse.ArgumentParser(
+            prog=config.app_name,
+            description=config.description,
+            usage=config.usage,
+            formatter_class=config.formatter_class,
+        )
+        return p
+
+
+@dataclass
+class ArgumentOptions:
+    """
+    Options for a command line argument.
+
+    :cvar name: str: The name of the argument.
+    :cvar data_type: Type: The data type of the argument.
+    :cvar help_text: Optional[str]: The help text for the argument.
+    :cvar required: bool: Whether the argument is required.
+    :cvar default: Optional[Any]: The default value for the argument.
+    :cvar choices: Optional[List[Any]]: The choices for the argument.
+    :cvar nargs: Optional[Union[int, str]]: The number of arguments.
+    :cvar metavar: Optional[str]: The metavar for the argument.
+    :cvar env: Optional[str]: The environment variable to get the default value from.
+    """
+
+    name: str
+    aliases: Optional[Iterable[str]] = None
+
+    # Normal args
+    data_type: Any = str
+    help_text: str = ""
+    required: bool = False
+    default: Any = None
+    choices: Optional[Iterable[Any]] = None
+    nargs: Any = None
+    metavar: Optional[str] = None
+
+    # Special flags
+    action: Optional[str] = None
+    version: Optional[str] = None  # only used when action == "version"
+
+
+class ArgumentParserFactory:
+    """
+    Factory class to create argument to parsers for the CLI application.
+    """
+
+    @staticmethod
+    def add_argument_parser(
+        parser: argparse.ArgumentParser,
+        options: ArgumentOptions,
+    ) -> argparse.ArgumentParser:
+        """
+        Add an argument parser for a command.
+
+        :param parser: The main parser for the CLI application.
+        :type parser: argparse.ArgumentParser
+
+        :param options: The options for the argument.
+        :type options: ArgumentOptions
+
+        :return: The argument parser for the command.
+        :rtype: argparse.ArgumentParser
+        """
+        # Use aliases if provided, otherwise build from name
+        flags = list(options.aliases or [f"--{options.name}"])
+
+        kwargs: dict[str, Any] = {
+            "help": options.help_text,
+        }
+
+        if options.action:
+            # Flag-style arguments
+            kwargs["action"] = options.action
+
+            if options.action == "version" and options.version:
+                kwargs["version"] = options.version
+        else:
+            # Normal arguments that take a value
+            kwargs.update(
+                type=options.data_type,
+                required=options.required,
+                default=options.default,
+                choices=options.choices,
+                nargs=options.nargs,
+                metavar=options.metavar,
+            )
+
+        parser.add_argument(*flags, **kwargs)
+        return parser
+
+
+class GlobalParserBuilder:
+    """
+    Builder class to create the global parser for the CLI application.
+    """
+
+    @staticmethod
+    def build_global_parser(version: str) -> argparse.ArgumentParser:
+        """
+        Build the global parser for the CLI application.
+
+        :return: The global parser for the CLI application.
+        :rtype: argparse.ArgumentParser
+        """
+        parser = argparse.ArgumentParser(
+            add_help=False  # Let the real parser handle help
+        )
+
+        # Version flag
+        version_opts = ArgumentOptions(
+            name="version",
+            aliases=["-V", "--version"],
+            help_text="Show the version and exit",
+            action="version",
+            version=version,
+        )
+        ArgumentParserFactory.add_argument_parser(parser, version_opts)
+
+        # Verbose flag
+        verbose_opts = ArgumentOptions(
+            name="verbose",
+            aliases=["-v", "--verbose"],
+            help_text="Increase verbosity (-v, -vv, -vvv)",
+            action="count",
+            default=0,
+        )
+        ArgumentParserFactory.add_argument_parser(parser, verbose_opts)
+
+        return parser
+
+
+# TODO: Add methods to register commands and arguments
 class BaseCLIApp:
     """
     Command line interface for the IC Inspector tool.
@@ -45,17 +193,27 @@ class BaseCLIApp:
     - Add custom commands to the parser.
     """
 
+    _commands: dict = {}
+
     def __init__(self, config: CLIConfig):
         """
         :param gui_callback: The callback function to run the GUI application.
         :type gui_callback: Optional[callable]
         """
-
         self.config = config
 
         self.parser = self._create_main_parser()
-        self.subparsers = self._add_subparsers(self.parser)
-        self._add_custom_commands(self.subparsers)
+        self.args: Optional[argparse.Namespace] = None
+        self.subparsers: Optional[argparse._SubParsersAction] = None
+
+    def build_commands(self):
+        """
+        Create subparsers and register all custom commands.
+        Should be called after registries are populated.
+        """
+        if self.subparsers is None:
+            self.subparsers = self._add_subparsers(self.parser)
+        self.add_custom_commands(self.subparsers)
 
     def _create_main_parser(self) -> argparse.ArgumentParser:
         """
@@ -64,24 +222,7 @@ class BaseCLIApp:
         :return: The main parser for the CLI application.
         :rtype: argparse.ArgumentParser
         """
-        p = argparse.ArgumentParser(
-            prog=self.config.app_name,
-            description=self.config.description,
-            usage=self.config.usage,
-            formatter_class=self.config.formatter_class,
-        )
-        if self.config.version:
-            p.add_argument(
-                "--version", action="version", version=self.config.version
-            )
-        p.add_argument(
-            "-v",
-            "--verbose",
-            action="count",
-            default=0,
-            help="Increase verbosity (-v, -vv)",
-        )
-        return p
+        return ParserFactory.create_main_parser(self.config)
 
     def _add_subparsers(
         self, parser: argparse.ArgumentParser
@@ -97,7 +238,16 @@ class BaseCLIApp:
         """
         return parser.add_subparsers(dest="command", help="Available commands")
 
-    def _add_custom_commands(self, subparsers: argparse._SubParsersAction):
+    def _register_command(self, command_cls: Type[BaseCommand]):
+        """
+        Register a command class to the CLI application.
+
+        :param command_cls: The command class to register.
+        :type command_cls: Type[BaseCommand]
+        """
+        self._commands[command_cls.name] = command_cls
+
+    def add_custom_commands(self, subparsers: argparse._SubParsersAction):
         """
         Add custom commands to the parser.
 
@@ -106,6 +256,8 @@ class BaseCLIApp:
         """
         for command_name in CommandRegistry.names():
             command_cls = CommandRegistry.get(command_name)
+            if command_cls.name in self._commands:
+                continue
             doc = (command_cls.__doc__ or "").strip()
             summary = command_cls.summary or (
                 doc.splitlines()[0] if doc else None
@@ -119,6 +271,7 @@ class BaseCLIApp:
                 formatter_class=argparse.RawDescriptionHelpFormatter,
             )
             self.define_command_arguments(command_parser, command_cls)
+            self._register_command(command_cls)
 
     # TODO: refactor to reduce complexity
     def define_command_arguments(

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from trivox_conductor.common.logger import logger
 
-from .base_observer import BaseObserver, ObserverContext
+from .observer_base import BaseObserver, ObserverContext
 from .observers_registry import ObserverRegistry
 
 

@@ -61,7 +61,7 @@ class SpecManager:
             filters=["ensure_classname"],
             params={
                 # TODO: This path should be configurable
-                "filename": ".trivox_conductor/logs/trivox_conductor.log",
+                "filename": ".trivox/logs/trivox_conductor.log",
                 "maxBytes": 5_000_000,
                 "backupCount": 3,
                 "encoding": "utf-8",

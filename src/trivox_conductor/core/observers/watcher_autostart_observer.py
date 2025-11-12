@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional
 from trivox_conductor.common.logger import logger
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.events.bus import BUS
-from trivox_conductor.core.observers.base_observer import (
+from trivox_conductor.core.observers.observer_base import (
     BaseObserver,
     ObserverContext,
 )
