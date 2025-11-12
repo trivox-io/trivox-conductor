@@ -28,6 +28,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(1000, 600)
         self.actionStart = QAction(MainWindow)
         self.actionStart.setObjectName(u"actionStart")
+        self.actionSettings = QAction(MainWindow)
+        self.actionSettings.setObjectName(u"actionSettings")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -146,6 +148,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+        self.menuFile.addAction(self.actionSettings)
 
         self.retranslateUi(MainWindow)
 
@@ -155,6 +158,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionStart.setText(QCoreApplication.translate("MainWindow", u"Start", None))
+        self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
 
         __sortingEnabled = self.navList.isSortingEnabled()
         self.navList.setSortingEnabled(False)
@@ -165,7 +169,7 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
-        self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
+        self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Profile", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
     # retranslateUi
 
