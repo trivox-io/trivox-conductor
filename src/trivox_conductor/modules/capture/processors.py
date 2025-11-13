@@ -31,7 +31,7 @@ from trivox_conductor.core.observers.bootstrap import attach_all_observers
 from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
-from trivox_conductor.core.session.session_manager import SessionManager
+from trivox_conductor.core.trivox_context import trivox_context
 from trivox_conductor.modules.watcher.services import WatcherService
 
 from .services import CaptureService
@@ -70,14 +70,14 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
             }.items()
             if v is not None
         }
-        self.set_pipeline_profile(overrides)
+        self.set_role_context(overrides)
         logger.debug("Setup observers context")
         manifest_service = ManifestService()
         watcher_service = WatcherService(WatcherRegistry, settings=settings)
 
         ctx = ObserverContext(
             profile_key=self._pipeline_profile_key,
-            profile=self._pipeline_profile,
+            profile=trivox_context.profile,
             manifest_service=manifest_service,
             watcher_service=watcher_service,
         )
@@ -93,21 +93,16 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
                 "session_id": self._session_id,
                 "scene": self._scene,
                 "profile": self._profile,
-                "overrides": self._overrides,
-                "pipeline_profile": self._pipeline_profile,
+                "overrides": trivox_context.overrides,
+                "pipeline_profile": trivox_context.profile,
             }
         if action == "stop":
-            return {"overrides": self._overrides}
+            return {"overrides": trivox_context.overrides}
         if action in ("list_scenes", "list_profiles"):
-            return {"overrides": self._overrides}
+            return {"overrides": trivox_context.overrides}
         return {}
 
     def run(self):
         # Implement the command processing logic here
         logger.debug("Running CaptureCommandProcessor")
-        session = SessionManager.ensure_session(
-            session_id=self._cli_session_id,
-            label=f"{self._pipeline_profile_key}",
-        )
-        self._session_id = session.id
         return super().run()

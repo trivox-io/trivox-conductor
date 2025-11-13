@@ -1,12 +1,15 @@
 from __future__ import annotations
+
 from PySide6 import QtWidgets
+
 from trivox_conductor.core.events.bus import (
     BUS,
 )  # uses your existing event bus
-from trivox_conductor.core.events.topics import (
+from trivox_conductor.core.events.topics import (  # adjust if names differ
     CAPTURE_STARTED,
     CAPTURE_STOPPED,
-)  # adjust if names differ
+)
+from trivox_conductor.core.trivox_context import trivox_context
 
 
 class RecorderSessionWidget(QtWidgets.QWidget):
@@ -14,12 +17,8 @@ class RecorderSessionWidget(QtWidgets.QWidget):
     Shows session id + current status (idle/recording). Listens to BUS for updates.
     """
 
-    def __init__(
-        self, *, context: dict, parent: QtWidgets.QWidget | None = None
-    ):
+    def __init__(self, *, parent: QtWidgets.QWidget | None = None):
         super().__init__(parent)
-        self._ctx = context
-        self._session_mgr = context["session_manager"]
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
@@ -49,9 +48,9 @@ class RecorderSessionWidget(QtWidgets.QWidget):
 
         # Initialize from current session if your SessionManager exposes it
         try:
-            current = self._session_mgr.current_session()
+            current = trivox_context.session.id
             if current:
-                self._session_id.setText(current.id)
+                self._session_id.setText(current)
         except Exception:
             pass
 

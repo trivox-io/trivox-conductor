@@ -25,8 +25,8 @@ class ResolvedCaptureProfile:
 
 
 def resolve_capture_profile(
-    role: str,
-    profile_key: Optional[str],
+    role: Optional[str] = None,
+    profile_key: Optional[str] = None,
     overrides: Mapping[str, Any] | None = None,
 ) -> ResolvedCaptureProfile:
     """
@@ -52,12 +52,20 @@ def resolve_capture_profile(
     incoming_overrides = dict(overrides or {})
 
     if not profile_key:
-        return ResolvedCaptureProfile(
-            profile=None, overrides=incoming_overrides
-        )
+        raise ValueError("profile_key must be provided")
 
     # Activates adapters as a side-effect
     profile = profile_manager.activate(profile_key)
+
+    if not role:
+        adapters_base: Dict[str, Any] = {}
+        for adapter in profile.adapters.values():
+            adapters_base.update(adapter.overrides)
+        merged = {
+            **adapters_base,
+            **incoming_overrides,
+        }
+        return ResolvedCaptureProfile(profile=profile, overrides=merged)
 
     adapter_config = profile.adapters.get(role)
     base: Dict[str, Any] = {}

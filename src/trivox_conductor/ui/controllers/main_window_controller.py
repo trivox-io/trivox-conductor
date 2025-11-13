@@ -68,6 +68,7 @@ class MainWindowController(BaseWindowController):
         self._context = self._build_view_context()
         self._view_rows: dict[int, int] = {}  # nav row -> stack index
 
+        self.set_role_context()
         self._setup_dashboard_cards()
         self._setup_dynamic_views()
         self.__connect_signals()
@@ -92,9 +93,7 @@ class MainWindowController(BaseWindowController):
         qa_layout.setSpacing(0)
         has_capture = _has_capture_adapter()
         if has_capture:
-            qa = QuickActionsWidget(
-                context=self._context, parent=w.quick_actions
-            )
+            qa = QuickActionsWidget(parent=w.quick_actions)
             qa_layout.addWidget(qa)
             w.quick_actions.setVisible(True)
         else:
@@ -105,9 +104,7 @@ class MainWindowController(BaseWindowController):
         rs_layout.setContentsMargins(0, 0, 0, 0)
         rs_layout.setSpacing(0)
         if has_capture:
-            rs = RecorderSessionWidget(
-                context=self._context, parent=w.recorder_and_session
-            )
+            rs = RecorderSessionWidget(parent=w.recorder_and_session)
             rs_layout.addWidget(rs)
             w.recorder_and_session.setVisible(True)
         else:

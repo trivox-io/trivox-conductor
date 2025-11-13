@@ -1,8 +1,11 @@
 from __future__ import annotations
+from typing import Optional
+
 from PySide6 import QtWidgets
 
 from trivox_conductor.common.settings import settings
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
+from trivox_conductor.core.trivox_context import trivox_context
 from trivox_conductor.modules.capture.services import CaptureService
 
 
@@ -11,12 +14,8 @@ class QuickActionsWidget(QtWidgets.QWidget):
     Only Start/Stop recording for now. Pure UI; talks to services via context/registries.
     """
 
-    def __init__(
-        self, *, context: dict, parent: QtWidgets.QWidget | None = None
-    ):
+    def __init__(self, *, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
-        self._ctx = context
-        self._session_mgr = context["session_manager"]
         self._svc = CaptureService(CaptureRegistry, settings)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -41,10 +40,11 @@ class QuickActionsWidget(QtWidgets.QWidget):
 
     def _on_start(self):
         # SessionManager may be a class or instance in your codebase—both patterns are used in your snippets.
-        session = self._session_mgr.ensure_session(label="capture")
+        session = trivox_context.session
         self._svc.start(
             session_id=session.id,
-            pipeline_profile=self._ctx.get("pipeline_profile"),
+            pipeline_profile=trivox_context.profile,
+            overrides=trivox_context.overrides,
         )
 
     def _on_stop(self):

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import traceback
 from typing import Callable, Optional
 
 import trivox_conductor.constants as trivox_constants
@@ -74,6 +75,7 @@ class TrivoxCLI(BaseCLIApp):
             # Justification: Broad exception caught to handle any error from the GUI launch
             # pylint: disable=broad-exception-caught
             except Exception as e:
+                print(traceback.format_exc(), file=sys.stderr)
                 print(f"Error launching GUI: {e}", file=sys.stderr)
                 return 1
             # pylint: enable=broad-exception-caught

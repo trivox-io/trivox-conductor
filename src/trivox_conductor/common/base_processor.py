@@ -8,10 +8,11 @@ from trivox_conductor.common.commands.base_command_processor import (
     BaseCommandProcessor,
 )
 from trivox_conductor.common.logger import logger
-from trivox_conductor.common.settings import settings
-from trivox_conductor.core.profiles.profile_injector import (
-    ResolvedCaptureProfile,
-    resolve_capture_profile,
+from trivox_conductor.core.session.session_manager import SessionManager
+from trivox_conductor.core.trivox_context import (
+    ContextBuilder,
+    ContextBuilderData,
+    trivox_context,
 )
 
 
@@ -26,8 +27,6 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
     ROLE: str
     SERVICE_CLS: Type  # e.g. CaptureService
     ACTION_MAP: Mapping[str, str]  # e.g. {"start": "start", "stop": "stop"}
-    _overrides: Optional[dict[str, Any]] = None
-    _pipeline_profile: Optional[ResolvedCaptureProfile] = None
     _cli_session_id: Optional[str] = None
     _session_id: Optional[str] = None
 
@@ -40,20 +39,17 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
         # TODO: Implement profile application logic
         self._config_file_path: Optional[str] = self._kwargs.pop("config")
 
-    def set_pipeline_profile(self, overrides: dict[str, Any]):
+    def set_role_context(self, overrides: dict[str, Any]):
         """Set connection overrides for the processor."""
-        resolved = resolve_capture_profile(
-            self.ROLE,
-            self._pipeline_profile_key,
+        data = ContextBuilderData(
+            role=self.ROLE,
+            pipeline_profile_key=self._pipeline_profile_key,
             overrides=overrides,
+            session_id=self._cli_session_id,
         )
-        logger.debug(f"Resolved pipeline profile: {resolved.profile}")
-        self._overrides = resolved.overrides
-        logger.debug(
-            f"Using pipeline profile: {resolved.profile} "
-            f"(overrides: {self._overrides})"
-        )
-        self._pipeline_profile = resolved.profile
+        ContextBuilder.build_context(data)
+        logger.debug(f"Resolved pipeline profile: {trivox_context.profile}")
+        self._session_id = trivox_context.session.id
 
     def build_service(self):
         """Subclasses build the service with proper registries/settings."""
