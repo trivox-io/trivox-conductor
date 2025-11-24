@@ -7,13 +7,13 @@ from ctypes import wintypes
 from typing import Optional
 
 from trivox_conductor.common.logger import logger
+from trivox_conductor.constants import Role
 from trivox_conductor.core.preflights.preflight_registry import (
     PreflightRegistry,
 )
 from trivox_conductor.core.preflights.preflight_types import (
     PreflightContext,
     PreflightFailure,
-    Role,
 )
 
 from .constants import CAPTURE_MODULE

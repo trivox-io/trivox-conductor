@@ -20,6 +20,7 @@ from trivox_conductor.core.session.session_manager import (
     SessionInfo,
     SessionManager,
 )
+from trivox_conductor.constants import Role
 
 # from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 # from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
@@ -28,9 +29,6 @@ from trivox_conductor.core.session.session_manager import (
 # from trivox_conductor.modules.watcher.services import WatcherService
 
 # from trivox_conductor.core.observers.bootstrap import attach_all_observers
-
-
-Role = Literal["capture", "watcher"]  # extend as modules grow
 
 
 class ServiceFactory:

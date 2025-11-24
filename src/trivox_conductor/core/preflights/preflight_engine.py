@@ -7,13 +7,14 @@ from __future__ import annotations
 from typing import Any, List, Mapping, Optional
 
 from trivox_conductor.common.logger import logger
+from trivox_conductor.constants import Role
 from trivox_conductor.core.profiles.profile_models import (
     Adapter,
     PipelineProfile,
 )
 
 from .preflight_registry import PreflightRegistry
-from .preflight_types import PreflightContext, PreflightFailure, Role
+from .preflight_types import PreflightContext, PreflightFailure
 
 
 def run_preflights(

@@ -52,8 +52,6 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Optional selections
-        self._cli_session_id = self._kwargs.pop("session_id", None)
-
         self._scene = self._kwargs.pop("scene", None)
         self._profile = self._kwargs.pop("profile", None)
 

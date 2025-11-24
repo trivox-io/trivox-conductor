@@ -6,7 +6,9 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from .preflight_types import PreflightCheck, Role
+from trivox_conductor.constants import Role
+
+from .preflight_types import PreflightCheck
 
 
 class PreflightRegistry:
@@ -19,11 +21,11 @@ class PreflightRegistry:
     _checks: Dict[Role, Dict[str, PreflightCheck]] = {
         "capture": {},
         "watcher": {},
-        "mux": {},
-        "color": {},
-        "uploader": {},
-        "notifier": {},
-        "ai": {},
+        # "mux": {},
+        # "color": {},
+        # "uploader": {},
+        # "notifier": {},
+        # "ai": {},
     }
 
     @classmethod
@@ -68,4 +70,5 @@ class PreflightRegistry:
         :param role: The adapter role (e.g., 'capture', 'uploader').
         :type role: Role
         """
+        return list(cls._checks[role].values())
         return list(cls._checks[role].values())

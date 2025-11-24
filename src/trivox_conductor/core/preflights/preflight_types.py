@@ -7,9 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Literal, Mapping, Optional, Protocol
 
-Role = Literal[
-    "capture", "watcher", "mux", "color", "uploader", "notifier", "ai"
-]
+from trivox_conductor.constants import Role
 
 
 @dataclass

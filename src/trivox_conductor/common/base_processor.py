@@ -32,6 +32,7 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+        self._cli_session_id = self._kwargs.pop("session_id", None)
         self._pipeline_profile_key: Optional[str] = self._kwargs.pop(
             "pipeline_profile"
         )
