@@ -47,7 +47,6 @@ class CaptureCommand(TrivoxConductorCommand):
     name = "capture"
     args = [
         ActionArgument("start", "stop", "list_scenes", "list_profiles"),
-        SessionIDArgument(),
         # --- connection overrides (optional) ---
         ArgumentType("host", str, "OBS host", default=None),
         ArgumentType("port", int, "OBS port", default=None),

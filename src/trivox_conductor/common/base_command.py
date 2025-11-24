@@ -84,6 +84,7 @@ class TrivoxConductorCommand(BaseCommand):
             "Profile to select before start",
             default="default_profile",
         ),
+        SessionIDArgument(),
     ]
 
     @classmethod

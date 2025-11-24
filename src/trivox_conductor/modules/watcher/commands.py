@@ -19,7 +19,6 @@ class WatcherCommand(TrivoxConductorCommand):
     name = "watch"
     args = [
         ActionArgument("start", "stop", "on_raw_detect"),
-        SessionIDArgument(),
     ]
 
     __doc__ = """
