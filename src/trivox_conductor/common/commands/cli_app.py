@@ -32,6 +32,7 @@ class CLIConfig:
     formatter_class: Optional[Type[argparse.HelpFormatter]] = (
         argparse.RawDescriptionHelpFormatter
     )
+    parents: Optional[list[argparse.ArgumentParser]] = None
 
 
 class ParserFactory:
@@ -55,6 +56,7 @@ class ParserFactory:
             description=config.description,
             usage=config.usage,
             formatter_class=config.formatter_class,
+            parents=config.parents or [],
         )
         return p
 
@@ -257,10 +259,18 @@ class BaseCLIApp:
             command_cls = CommandRegistry.get(command_name)
             if command_cls.name in self._commands:
                 continue
-            doc = (command_cls.__doc__ or "").strip()
+
+            # ---- description/summary handling ----
+            if issubclass(command_cls, BaseCommand):
+                # Use combined description (own docstring + common args block)
+                doc = command_cls.full_description()
+            else:
+                doc = (command_cls.__doc__ or "").strip()
+
             summary = command_cls.summary or (
                 doc.splitlines()[0] if doc else None
             )
+
             command_parser = subparsers.add_parser(
                 command_cls.name,
                 help=summary,

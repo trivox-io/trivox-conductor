@@ -110,6 +110,7 @@ def main(argv: Optional[list[str]] = None):
             app_name=trivox_constants.CLI.executable_name,
             description=trivox_constants.CLI.description,
             usage=trivox_constants.CLI.usage,
+            parents=[global_parser],
         ),
         gui_callback=run_gui,
     )

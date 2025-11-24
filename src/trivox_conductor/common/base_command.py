@@ -6,6 +6,7 @@ ic_ingest commands.
 
 from __future__ import annotations
 
+import textwrap
 from typing import Iterable, List, Optional
 
 from trivox_conductor.common.commands.argument_type import ArgumentType
@@ -88,6 +89,27 @@ class TrivoxConductorCommand(BaseCommand):
     ]
 
     @classmethod
+    def common_help_block(cls) -> str:
+        """
+        Text block describing the common options.
+        This will be appended to every Trivox CLI command description.
+        """
+        return textwrap.dedent(
+            """\
+            Common options (available for all Trivox commands):
+
+                --config PATH
+                    Path to the configuration file.
+
+                --pipeline_profile NAME
+                    Profile to select before start (default: "default_profile").
+
+                --session_id ID
+                    Session ID to associate with this run. If omitted, a new one may be generated.
+            """
+        )
+
+    @classmethod
     def define_arguments(cls) -> List[ArgumentType]:
         """
         Merge command-specific args with common flags.
@@ -100,6 +122,18 @@ class TrivoxConductorCommand(BaseCommand):
             if common.name not in existing:
                 merged.append(common)
         return merged
+
+    @classmethod
+    def full_description(cls) -> str:
+        """
+        Combine the command's own docstring with the common Trivox options.
+        Called by the CLI when building help.
+        """
+        base = (cls.__doc__ or "").strip()
+        extra = cls.common_help_block()
+        if base:
+            return f"{base.rstrip()}\n\n{extra}"
+        return extra
 
     def set_processor(self, processor: BaseCommandProcessor):
         """
