@@ -6,7 +6,7 @@ ic_ingest commands.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional
+from typing import Iterable, List, Optional
 
 from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.common.commands.base_command import BaseCommand

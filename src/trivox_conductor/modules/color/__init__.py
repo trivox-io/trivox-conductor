@@ -1,2 +1,2 @@
-from .commands import ColorCommand
-from .settings import ColorSettings
+# from .commands import ColorCommand
+# from .settings import ColorSettings

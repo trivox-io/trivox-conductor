@@ -5,7 +5,6 @@ Command line interface for the IC Inspector tool.
 import argparse
 import os
 import sys
-from ast import Dict, alias
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Optional, Type
 

@@ -28,7 +28,6 @@ processor and service layers.
 
 from trivox_conductor.common.base_command import (
     ActionArgument,
-    SessionIDArgument,
     TrivoxConductorCommand,
 )
 from trivox_conductor.common.commands.argument_type import ArgumentType
