@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, Tuple
 
 from trivox_conductor.common.logger import logger
 
@@ -33,6 +33,10 @@ from trivox_conductor.core.session.session_manager import (
 Role = Literal["capture", "watcher"]  # extend as modules grow
 
 
+class ServiceFactory:
+    """Dummy placeholder for service factory types."""
+
+
 @dataclass
 class RoleState:
     # What the CLI processor keeps
@@ -57,11 +61,13 @@ class TrivoxContext:
     _instance: Optional["TrivoxContext"] = None
 
     _roles: Dict[Role, RoleState] = {}
-    _manifest_service: Optional[ManifestService] = None
-    # _watcher_service: Optional[WatcherService] = None
+
     _session_id: Optional[str] = None
     _resolved_profile: Optional[ResolvedCaptureProfile] = None
     session: Optional[SessionInfo] = None
+
+    _service_factories: Dict[Tuple[str, str], ServiceFactory] = {}
+    _services: Dict[Tuple[str, str], Any] = {}
 
     def __new__(cls) -> "TrivoxContext":
         if cls._instance is None:
@@ -73,9 +79,6 @@ class TrivoxContext:
                     "watcher": RoleState(),
                 }
             )
-            cls._instance._manifest_service = None
-            cls._instance._watcher_service = None
-            cls._instance._session_id = None
         return cls._instance
 
     @property
@@ -108,6 +111,28 @@ class TrivoxContext:
             session_id=session_id,
             label="trivox_context",
         )
+
+    def register_service_factory(
+        self, *, role: Role, name: str, factory: ServiceFactory
+    ):
+        key = (role, name)
+        self._service_factories[key] = factory
+        # reset instance in case you re-register (hot-reload)
+        self._services.pop(key, None)
+        logger.debug(f"Service factory registered: {key}")
+
+    def ensure_service(self, *, role: Role, name: str):
+        key = (role, name)
+        if key in self._services:
+            return self._services[key]
+        try:
+            factory = self._service_factories[key]
+        except KeyError:
+            raise RuntimeError(f"No service factory registered for {key}")
+        inst = factory()
+        self._services[key] = inst
+        logger.debug(f"[TrivoxContext] service built: {key}")
+        return inst
 
 
 trivox_context = TrivoxContext()

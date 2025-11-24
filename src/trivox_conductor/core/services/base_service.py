@@ -43,6 +43,8 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from typing import Any, Generic, Mapping, Optional, Protocol, Type, TypeVar
 
+from trivox_conductor.core.profiles.profile_models import PipelineProfile
+
 TConf = TypeVar("TConf")
 TAdapter = TypeVar("TAdapter")
 
@@ -81,7 +83,12 @@ class BaseService(Generic[TConf, TAdapter]):
     MODEL: Type[TConf]  # override in subclass, e.g. CaptureSettingsModel
 
     def __init__(
-        self, registry: RegistryProto[TAdapter], settings: Mapping[str, Any]
+        self,
+        registry: RegistryProto[TAdapter],
+        settings: Mapping[str, Any],
+        session_id: Optional[str] = None,
+        pipeline_profile: Optional[PipelineProfile] = None,
+        profile_overrides: Optional[Mapping[str, Any]] = None,
     ):
         """
         :param registry: Adapter registry for the service role.
@@ -92,6 +99,9 @@ class BaseService(Generic[TConf, TAdapter]):
         """
         self._registry = registry
         self._settings: TConf = self._load_config(settings)
+        self._session_id = session_id
+        self._pipeline_profile = pipeline_profile
+        self._profile_overrides = profile_overrides or {}
 
     def _load_config(self, settings: Mapping[str, Any]) -> TConf:
         raw = settings.get(self.SECTION, {}) or {}

@@ -39,7 +39,7 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
         # TODO: Implement profile application logic
         self._config_file_path: Optional[str] = self._kwargs.pop("config")
 
-    def set_role_context(self, overrides: dict[str, Any]):
+    def initialize_context(self, overrides: dict[str, Any]):
         """Set connection overrides for the processor."""
         data = ContextBuilderData(
             role=self.ROLE,

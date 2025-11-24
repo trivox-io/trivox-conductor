@@ -68,7 +68,7 @@ class MainWindowController(BaseWindowController):
         self._context = self._build_view_context()
         self._view_rows: dict[int, int] = {}  # nav row -> stack index
 
-        self.set_role_context()
+        self.initialize_context()
         self._setup_dashboard_cards()
         self._setup_dynamic_views()
         self.__connect_signals()

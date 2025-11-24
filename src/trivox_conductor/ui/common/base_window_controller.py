@@ -1,4 +1,3 @@
-from asyncio.log import logger
 from typing import Any, Optional
 
 from trivox_conductor.core.trivox_context import (
@@ -24,7 +23,7 @@ class BaseWindowController(ControllersMediator):
         """
         self.mediator = mediator
 
-    def set_role_context(self, overrides: Optional[dict[str, Any]] = None):
+    def initialize_context(self, overrides: Optional[dict[str, Any]] = None):
         """Set connection overrides for the processor."""
         data = ContextBuilderData(
             pipeline_profile_key=self._pipeline_profile_key

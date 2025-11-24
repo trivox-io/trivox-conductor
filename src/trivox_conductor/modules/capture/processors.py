@@ -70,7 +70,7 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
             }.items()
             if v is not None
         }
-        self.set_role_context(overrides)
+        self.initialize_context(overrides)
         logger.debug("Setup observers context")
         manifest_service = ManifestService()
         watcher_service = WatcherService(WatcherRegistry, settings=settings)
@@ -90,16 +90,9 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     def build_call_kwargs(self, action: str) -> dict:
         if action == "start":
             return {
-                "session_id": self._session_id,
                 "scene": self._scene,
                 "profile": self._profile,
-                "overrides": trivox_context.overrides,
-                "pipeline_profile": trivox_context.profile,
             }
-        if action == "stop":
-            return {"overrides": trivox_context.overrides}
-        if action in ("list_scenes", "list_profiles"):
-            return {"overrides": trivox_context.overrides}
         return {}
 
     def run(self):

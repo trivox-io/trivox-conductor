@@ -38,8 +38,9 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from trivox_conductor.common.logger import logger
 from trivox_conductor.core.contracts.capture import CaptureAdapter
-from trivox_conductor.core.events import topics
-from trivox_conductor.core.events.bus import BUS
+
+# from trivox_conductor.core.events import topics
+# from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.preflights.preflight_engine import run_preflights
 from trivox_conductor.core.profiles.profile_models import PipelineProfile
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
@@ -47,7 +48,6 @@ from trivox_conductor.core.services.base_service import BaseService
 
 from .preflight import CapturePreflight
 from .settings import CaptureSettingsModel
-from .state import CaptureState
 from .state_store import CaptureStateStore
 
 
@@ -64,59 +64,53 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self,
         registry: CaptureRegistry,
         settings: Dict,
-        preflight: Optional[CapturePreflight] = None,
-        state: Optional[CaptureState] = None,
+        session_id: Optional[str] = None,
+        pipeline_profile: Optional[PipelineProfile] = None,
+        profile_overrides: Optional[Mapping[str, Any]] = None,
     ):
         """
         :param registry: CaptureRegistry instance for adapter management.
         :type registry: CaptureRegistry
-
-        :param preflight: Optional CapturePreflight instance for checks.
-        :type preflight: Optional[CapturePreflight]
-
-        :param state: Optional CaptureState instance for runtime state.
-        :type state: Optional[CaptureState]
         """
-        super().__init__(registry, settings)
-        self._preflight = preflight or CapturePreflight()
+        super().__init__(
+            registry, settings, session_id, pipeline_profile, profile_overrides
+        )
+
+        self._preflight = CapturePreflight()
         self._store = CaptureStateStore()
         # Load persisted state if no in-memory state provided
-        self._state = state or self._store.load()
+        self._state = self._store.load()
 
     # ----- Queries -----
-    def list_scenes(
-        self, *, overrides: Optional[Mapping[str, Any]] = None
-    ) -> List[str]:
+    def list_scenes(self) -> List[str]:
         """
         List available capture scenes from the active adapter.
 
         :return: List of scene names.
         :rtype: List[str]
         """
-        adapter = self._get_configured_adapter(overrides=overrides)
+        adapter = self._get_configured_adapter(
+            overrides=self._profile_overrides
+        )
         return adapter.list_scenes() if adapter else []
 
-    def list_profiles(
-        self, *, overrides: Optional[Mapping[str, Any]] = None
-    ) -> List[str]:
+    def list_profiles(self) -> List[str]:
         """
         List available capture profiles from the active adapter.
 
         :return: List of profile names.
         :rtype: List[str]
         """
-        adapter = self._get_configured_adapter(overrides=overrides)
+        adapter = self._get_configured_adapter(
+            overrides=self._profile_overrides
+        )
         return adapter.list_profiles() if adapter else []
 
     # ----- Commands -----
     def start(
         self,
-        session_id: str,
-        *,
         scene: Optional[str] = None,
         profile: Optional[str] = None,
-        overrides: Optional[Mapping[str, Any]] = None,
-        pipeline_profile: Optional[PipelineProfile] = None,
     ):
         """
         Start the capture process using the active adapter.
@@ -130,29 +124,26 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         :param profile: Optional profile name to select before starting.
         :type profile: Optional[str]
 
-        :param overrides: Optional mapping of connection overrides.
-        :type overrides: Optional[Mapping[str, Any]]
-
         :raises RuntimeError: If preflight checks fail or no adapter is configured.
         """
-        if not session_id:
+        if not self._session_id:
             raise ValueError("session_id is required")
 
         # Build merged config (base settings + overrides + session_id)
         cfg_dict = asdict(self._settings)
-        cfg_dict["session_id"] = session_id
-        if overrides:
-            cfg_dict.update(overrides)
+        cfg_dict["session_id"] = self._session_id
+        if self._profile_overrides:
+            cfg_dict.update(self._profile_overrides)
 
         adapter = self._get_configured_adapter(overrides=cfg_dict)
 
         # --- Preflight: collect failures and bail once, with a helpful message ---
         failures = run_preflights(
             role="capture",
-            profile=pipeline_profile,
+            profile=self._pipeline_profile,
             adapter=adapter,
             base_settings=cfg_dict,
-            session_id=session_id,
+            session_id=self._session_id,
         )
 
         required_failures = [f for f in failures if f.required]
@@ -215,7 +206,7 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             raise
 
         adapter.start_capture()
-        self._state.start(session_id)
+        self._state.start(self._session_id)
         self._store.save(self._state)
         logger.info("capture.started - session_id=%s", self._state.session_id)
         # BUS.publish(
@@ -228,7 +219,7 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         #     },
         # )
 
-    def stop(self, *, overrides: Optional[Mapping[str, Any]] = None):
+    def stop(self):
         """
         Stop the capture process using the active adapter.
 
@@ -237,7 +228,9 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         if not self._state.is_recording:
             self._state = self._store.load()
 
-        adapter = self._get_configured_adapter(overrides=overrides)
+        adapter = self._get_configured_adapter(
+            overrides=self._profile_overrides
+        )
         # Adapter is the source of truth
         is_recording_now = False
         try:
