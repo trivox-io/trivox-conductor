@@ -16,6 +16,7 @@ from .loader_constants import (
     ObserverLoaderInfo,
     PluginLoaderInfo,
 )
+from .types import Role
 
 __all__ = [
     "ROOT_DIR",
@@ -27,6 +28,7 @@ __all__ = [
     "MODULES_LOADER",
     "PLUGINS_LOADER",
     "OBSERVERS_LOADER",
+    "Role",
 ]
 
 APP = AppInfo(

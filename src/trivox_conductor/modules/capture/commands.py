@@ -34,6 +34,7 @@ from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.logger import logger
 
+from .constants import CAPTURE_MODULE
 from .processors import CaptureCommandProcessor
 
 
@@ -43,9 +44,9 @@ class CaptureCommand(TrivoxConductorCommand):
     Command for Capture module.
     """
 
-    name = "capture"
+    name = CAPTURE_MODULE.command_name
     args = [
-        ActionArgument("start", "stop", "list_scenes", "list_profiles"),
+        ActionArgument(*CAPTURE_MODULE.actions),
         # --- connection overrides (optional) ---
         ArgumentType("host", str, "OBS host", default=None),
         ArgumentType("port", int, "OBS port", default=None),

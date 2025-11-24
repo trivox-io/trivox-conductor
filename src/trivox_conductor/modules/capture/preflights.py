@@ -16,10 +16,12 @@ from trivox_conductor.core.preflights.preflight_types import (
     Role,
 )
 
+from .constants import CAPTURE_MODULE
+
 
 class DiskSpaceCheck:
     id = "capture.disk_space"
-    role: Role = "capture"
+    role: Role = CAPTURE_MODULE.key
     default_required = True
     adapter_name: Optional[str] = None  # any capture adapter
 
@@ -36,7 +38,7 @@ class DiskSpaceCheck:
         min_gb = float(settings.get("min_record_free_gb", 5.0))
 
         try:
-            total, used, free = shutil.disk_usage(record_dir)
+            _total, _used, free = shutil.disk_usage(record_dir)
         except FileNotFoundError:
             return PreflightFailure(
                 id=self.id,
@@ -100,7 +102,7 @@ def _get_foreground_window_title() -> Optional[str]:
 
 class WindowForegroundCheck:
     id = "capture.window_foreground"
-    role: Role = "capture"
+    role: Role = CAPTURE_MODULE.key
     default_required = False
     adapter_name: Optional[str] = None  # applies to any capture adapter
 

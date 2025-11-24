@@ -21,6 +21,8 @@ Design notes
 
 from __future__ import annotations
 
+import sys
+
 from trivox_conductor.common.base_processor import (
     TrivoxCaptureCommandProcessor,
 )
@@ -34,6 +36,7 @@ from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.trivox_context import trivox_context
 from trivox_conductor.modules.watcher.services import WatcherService
 
+from .constants import CAPTURE_MODULE
 from .services import CaptureService
 
 
@@ -42,22 +45,17 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     Command processor for Capture module commands.
     """
 
-    ROLE = "capture"
+    ROLE = CAPTURE_MODULE.role
     SERVICE_CLS = CaptureService
-    ACTION_MAP = {
-        "start": "start",
-        "stop": "stop",
-        "list_scenes": "list_scenes",
-        "list_profiles": "list_profiles",
-    }
+    ACTION_MAP = {k: k for k in CAPTURE_MODULE.actions}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Optional selections
         self._cli_session_id = self._kwargs.pop("session_id", None)
 
-        self._scene = self._kwargs.pop("scene")
-        self._profile = self._kwargs.pop("profile")
+        self._scene = self._kwargs.pop("scene", None)
+        self._profile = self._kwargs.pop("profile", None)
 
         # Connection overrides (only include if provided)
         overrides = {

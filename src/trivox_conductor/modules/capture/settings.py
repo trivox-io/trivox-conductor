@@ -26,6 +26,8 @@ from dataclasses import asdict, dataclass
 from trivox_conductor.common.settings.base_settings import BaseSettings
 from trivox_conductor.common.settings.settings_registry import register_setting
 
+from .constants import CAPTURE_MODULE
+
 
 @dataclass(frozen=True)
 class CaptureSettingsModel:
@@ -60,7 +62,7 @@ class CaptureSettings(BaseSettings):
     Settings for the Capture module.
     """
 
-    name = "capture"
+    name = CAPTURE_MODULE.key
 
     def __init__(self):
         super().__init__(asdict(CaptureSettingsModel()))

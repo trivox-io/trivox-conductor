@@ -46,6 +46,7 @@ from trivox_conductor.core.profiles.profile_models import PipelineProfile
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.services.base_service import BaseService
 
+from .constants import CAPTURE_MODULE
 from .preflight import CapturePreflight
 from .settings import CaptureSettingsModel
 from .state_store import CaptureStateStore
@@ -57,7 +58,7 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
     DIP: depends on CaptureRegistry (abstraction), not a concrete adapter.
     """
 
-    SECTION = "capture"
+    SECTION = CAPTURE_MODULE.key
     MODEL = CaptureSettingsModel
 
     def __init__(
