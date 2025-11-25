@@ -47,7 +47,6 @@ from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.services.base_service import BaseService
 
 from .constants import CAPTURE_MODULE
-from .preflight import CapturePreflight
 from .settings import CaptureSettingsModel
 from .state_store import CaptureStateStore
 
@@ -77,7 +76,6 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             registry, settings, session_id, pipeline_profile, profile_overrides
         )
 
-        self._preflight = CapturePreflight()
         self._store = CaptureStateStore()
         # Load persisted state if no in-memory state provided
         self._state = self._store.load()
