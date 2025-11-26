@@ -15,7 +15,7 @@ profiles:
           obs_launch_wait_sec: 15.0
           
           capture_desktop_audio: true
-          capture_mic_audio: false 
+          capture_mic_audio: false
 
         preflights:
           - id: "capture.obs_launch"

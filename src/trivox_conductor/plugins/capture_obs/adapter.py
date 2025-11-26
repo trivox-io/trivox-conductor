@@ -46,11 +46,12 @@ from __future__ import annotations
 
 import logging
 from contextlib import suppress
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, ClassVar, Tuple
 
 import obsws_python as obsws
 from obsws_python import error as obs_err
 
+from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.core.contracts.base_contract import AdapterMeta
 from trivox_conductor.core.contracts.capture import CaptureAdapter
 from trivox_conductor.core.events import topics
@@ -75,6 +76,44 @@ class OBSAdapter(CaptureAdapter):
         "capabilities": ["scenes:list", "profiles:list"],
         "source": "local",
     }
+    cli_arguments: ClassVar[Tuple[ArgumentType, ...]] = (
+        ArgumentType(
+            "host",
+            str,
+            "OBS host for websocket connection",
+            default=None,
+        ),
+        ArgumentType(
+            "port",
+            int,
+            "OBS port for websocket connection",
+            default=None,
+        ),
+        ArgumentType(
+            "password",
+            str,
+            "OBS password for websocket connection",
+            default=None,
+        ),
+        ArgumentType(
+            "request_timeout_sec",
+            float,
+            "OBS request timeout (sec) for websocket connection",
+            default=None,
+        ),
+        ArgumentType(
+            "scene",
+            str,
+            "OBS Scene to select before start",
+            default=None,
+        ),
+        ArgumentType(
+            "profile",
+            str,
+            "OBS Profile to select before start",
+            default=None,
+        ),
+    )
 
     def __init__(self):
         self._settings: Dict = {}

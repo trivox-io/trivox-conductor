@@ -28,11 +28,13 @@ processor and service layers.
 
 from trivox_conductor.common.base_command import (
     ActionArgument,
+    OptionsArgument,
     TrivoxConductorCommand,
 )
 from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.logger import logger
+from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 
 from .constants import CAPTURE_MODULE
 from .processors import CaptureCommandProcessor
@@ -47,42 +49,16 @@ class CaptureCommand(TrivoxConductorCommand):
     name = CAPTURE_MODULE.command_name
     args = [
         ActionArgument(*CAPTURE_MODULE.actions),
-        # --- connection overrides (optional) ---
-        ArgumentType(
-            "host", str, "OBS host for websocket connection", default=None
-        ),
-        ArgumentType(
-            "port", int, "OBS port for websocket connection", default=None
-        ),
-        ArgumentType(
-            "password",
-            str,
-            "OBS password for websocket connection",
-            default=None,
-        ),
-        ArgumentType(
-            "request_timeout_sec",
-            float,
-            "OBS request timeout (sec) for websocket connection",
-            default=None,
-        ),
-        # --- selection (optional) ---
-        ArgumentType(
-            "scene", str, "OBS Scene to select before start", default=None
-        ),
-        ArgumentType(
-            "profile", str, "OBS Profile to select before start", default=None
-        ),
+        OptionsArgument(),
     ]
 
     __doc__ = """
     Capture command for managing capture operations.
     Usage:
-      capture --action start --session_id <id> [--scene <name>] [--profile <name>]
-              [--host 127.0.0.1] [--port 4455] [--password ******] [--request_timeout_sec 3.0]
-      capture --action stop [conn-overrides]
-      capture --action list_scenes [conn-overrides]
-      capture --action list_profiles [conn-overrides]
+      capture --action start --session_id <id> [--options host=127.0.0.1,port=4455,scene=MyScene]
+      capture --action stop [--options ...]
+      capture --action list_scenes [--options ...]
+      capture --action list_profiles [--options ...]
     
     Description:
         This command allows you to start or stop capture operations
@@ -93,4 +69,4 @@ class CaptureCommand(TrivoxConductorCommand):
         # Implement the command execution logic here
         logger.debug(f"Executing CaptureCommand with kwargs: {kwargs}")
         self.set_processor(CaptureCommandProcessor)
-        self._run(**kwargs)
+        return self._run(**kwargs)

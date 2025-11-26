@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Dict, Literal, Optional, Tuple, get_args
 
 from trivox_conductor.common.logger import logger
+from trivox_conductor.constants import Role
 
 # from trivox_conductor.common.settings import settings
 # from trivox_conductor.core.events.bus import BUS
@@ -20,7 +21,6 @@ from trivox_conductor.core.session.session_manager import (
     SessionInfo,
     SessionManager,
 )
-from trivox_conductor.constants import Role
 
 # from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 # from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
@@ -37,6 +37,15 @@ class ServiceFactory:
 
 @dataclass
 class RoleState:
+    """
+    State associated with a specific role in the TrivoxContext.
+
+    :cvar profile_key (Optional[str]): Pipeline profile key for the role.
+    :cvar profile (Optional[ResolvedCaptureProfile]): Resolved pipeline profile.
+    :cvar overrides (Dict[str, Any]): Connection overrides for the role.
+    :cvar observers_attached (bool): Flag indicating if observers are attached.
+    """
+
     # What the CLI processor keeps
     profile_key: Optional[str] = None
     profile: Optional[ResolvedCaptureProfile] = None
@@ -71,11 +80,9 @@ class TrivoxContext:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             # initialize instance state
+            logger.error(Role)
             cls._instance._roles.update(
-                {
-                    "capture": RoleState(),
-                    "watcher": RoleState(),
-                }
+                {role: RoleState() for role in get_args(Role)}
             )
         return cls._instance
 
@@ -97,6 +104,15 @@ class TrivoxContext:
         """
         Resolve and store pipeline profile + overrides for a given role.
         This matches the behavior in TrivoxCaptureCommandProcessor.set_pipeline_profile.
+
+        :param role: Role for which to set the pipeline profile.
+        :type role: Role
+
+        :param pipeline_profile_key: Pipeline profile key to resolve.
+        :type pipeline_profile_key: Optional[str]
+
+        :param overrides: Connection overrides to apply.
+        :type overrides: Optional[dict[str, Any]]
         """
         overrides = overrides or {}
         self._resolved_profile = resolve_capture_profile(
@@ -104,6 +120,12 @@ class TrivoxContext:
         )
 
     def set_session(self, session_id: Optional[str]):
+        """
+        Ensure and set the session in the context.
+
+        :param session_id: Session ID to set.
+        :type session_id: Optional[str]
+        """
         self._session_id = session_id
         self.session = SessionManager.ensure_session(
             session_id=session_id,
@@ -138,6 +160,15 @@ trivox_context = TrivoxContext()
 
 @dataclass
 class ContextBuilderData:
+    """
+    Data required to build a TrivoxContext.
+
+    :cvar role (Optional[Role]): Role for which to build the context.
+    :cvar pipeline_profile_key (Optional[str]): Pipeline profile key to resolve.
+    :cvar overrides (dict[str, Any]): Connection overrides to apply.
+    :cvar session_id (Optional[str]): Session ID to set in the context.
+    """
+
     role: Optional[Role] = None
     pipeline_profile_key: Optional[str] = None
     overrides: dict[str, Any] = field(default_factory=dict)
@@ -153,6 +184,15 @@ class ContextBuilder:
     def build_context(
         data: ContextBuilderData,
     ) -> TrivoxContext:
+        """
+        Build and return a TrivoxContext based on the provided data.
+
+        :param data: ContextBuilderData containing context parameters.
+        :type data: ContextBuilderData
+
+        :return: The built TrivoxContext.
+        :rtype: TrivoxContext
+        """
         role: Optional[Role] = data.role
         pipeline_profile_key: Optional[str] = data.pipeline_profile_key
         overrides: dict[str, Any] = data.overrides

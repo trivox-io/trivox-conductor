@@ -65,6 +65,26 @@ class SessionIDArgument(ArgumentType):
         )
 
 
+class OptionsArgument(ArgumentType):
+    """
+    Generic 'options' bag: --options host=127.0.0.1,port=5050,scene=Foo
+
+    Parsed later into a dict and merged into overrides.
+    """
+
+    def __init__(self):
+        super().__init__(
+            name="options",
+            data_type=str,  # we'll parse the string ourselves
+            help_text=(
+                "Adapter-specific options as comma-separated key=value pairs. "
+                "Example: host=127.0.0.1,port=5050,scene=MyScene"
+            ),
+            required=False,
+            default=None,
+        )
+
+
 class TrivoxConductorCommand(BaseCommand):
     """
     Base class for all TrivoxConductor commands.

@@ -88,10 +88,15 @@ def main(argv: Optional[list[str]] = None):
     """
     Main entry point for the CLI application.
 
-    - Load all modules to register commands, settings, and strategies.
-    - Populate settings and setup the logger.
+    - Create global parser and parse global args.
+    - Initialize the application:
+    - Instantiate the CLI application.
     - Parse the command line arguments.
     - Run the specified command.
+    - Exit with the appropriate code.
+
+    :param argv: List of command line arguments. If None, uses sys.argv.
+    :type argv: Optional[list[str]]
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -101,7 +106,6 @@ def main(argv: Optional[list[str]] = None):
     )
     global_args, remaining_argv = global_parser.parse_known_args(argv)
 
-    # Load all modules to register commands, settings, and strategies.
     initialize(global_args.verbose)
 
     # Parse the command line arguments

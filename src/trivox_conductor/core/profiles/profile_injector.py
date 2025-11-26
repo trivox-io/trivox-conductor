@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Optional
 
-from trivox_conductor.core.profiles import profile_manager
+from trivox_conductor.core.profiles import get_profile_manager
 from trivox_conductor.core.profiles.profile_models import PipelineProfile
 
 
@@ -55,7 +55,7 @@ def resolve_capture_profile(
         raise ValueError("profile_key must be provided")
 
     # Activates adapters as a side-effect
-    profile = profile_manager.activate(profile_key)
+    profile = get_profile_manager().activate(profile_key)
 
     if not role:
         adapters_base: Dict[str, Any] = {}

@@ -32,6 +32,10 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
+        # TODO: Get rid of redundant kwargs handling in CLI framework
+        self._kwargs.pop("verbose", None)
+
+        self._action = self._kwargs.pop("action", None)
         self._cli_session_id = self._kwargs.pop("session_id", None)
         self._pipeline_profile_key: Optional[str] = self._kwargs.pop(
             "pipeline_profile"
@@ -40,17 +44,57 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
         # TODO: Implement profile application logic
         self._config_file_path: Optional[str] = self._kwargs.pop("config")
 
-    def initialize_context(self, overrides: dict[str, Any]):
+        self._overrides = self._get_overrides()
+        self._initialize_context()
+
+    @staticmethod
+    def _parse_options_string(raw: Optional[str]) -> dict[str, Any]:
+        """
+        Parse 'host=127.0.0.1,port=5050,scene=Foo' -> {'host': '127.0.0.1', ...}.
+
+        Extremely simple on purpose; adapters can further coerce types if needed.
+        """
+        if not raw:
+            return {}
+        out: dict[str, Any] = {}
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        for part in parts:
+            if "=" not in part:
+                logger.warning(
+                    f"Skipping invalid options part (no '='): '{part}'"
+                )
+                continue
+            key, value = part.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+            if not key:
+                continue
+            out[key] = value
+        return out
+
+    def _get_overrides(self) -> dict[str, Any]:
+        """Extract connection overrides from kwargs."""
+        raw_options = self._kwargs.pop("options", None)
+        options_dict = self._parse_options_string(raw_options)
+
+        overrides = dict(options_dict)
+
+        logger.debug(f"Role overrides (from --options): {overrides}")
+        return overrides
+
+    def _initialize_context(self):
         """Set connection overrides for the processor."""
         data = ContextBuilderData(
             role=self.ROLE,
             pipeline_profile_key=self._pipeline_profile_key,
-            overrides=overrides,
+            overrides=self._overrides,
             session_id=self._cli_session_id,
         )
+        logger.debug(f"Initializing context with data: {data}")
         ContextBuilder.build_context(data)
-        logger.debug(f"Resolved pipeline profile: {trivox_context.profile}")
+        logger.info(f"Resolved pipeline profile: {trivox_context.profile}")
         self._session_id = trivox_context.session.id
+        logger.info(f"Using session ID: {self._session_id}")
 
     def build_service(self):
         """Subclasses build the service with proper registries/settings."""
@@ -63,15 +107,14 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
 
     def run(self):
         svc = self.build_service()
-        action = self._kwargs.get("action")
-        if not action:
+        if not self._action:
             raise ValueError("Action is required")
 
         try:
-            method_name = self.ACTION_MAP[action]
+            method_name = self.ACTION_MAP[self._action]
         except KeyError as e:
-            raise ValueError(f"Unknown action: {action}") from e
+            raise ValueError(f"Unknown action: {self._action}") from e
 
         method = getattr(svc, method_name)
-        call_kwargs = self.build_call_kwargs(action)
+        call_kwargs = self.build_call_kwargs(self._action)
         return method(**call_kwargs)

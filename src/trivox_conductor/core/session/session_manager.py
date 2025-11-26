@@ -26,6 +26,18 @@ class SessionManager:
     def start_session(
         cls, session_id: Optional[str] = None, label: str = ""
     ) -> SessionInfo:
+        """
+        Start a new session with the given ID or a generated one.
+
+        :param session_id: Optional session ID to use.
+        :type session_id: Optional[str]
+
+        :param label: Optional label for the session.
+        :type label: str
+
+        :return: The started SessionInfo.
+        :rtype: SessionInfo
+        """
         sid = session_id or cls.generate_id()
         info = SessionInfo(id=sid, created_at=datetime.utcnow(), label=label)
         cls._by_id[sid] = info

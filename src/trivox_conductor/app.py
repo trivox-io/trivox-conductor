@@ -5,14 +5,17 @@ Main application entry point for Trivox Conductor.
 from __future__ import annotations
 
 import os
+from dataclasses import asdict, dataclass
 from typing import Optional
 
 import trivox_conductor.constants as trivox_constants
 from trivox_conductor.common.dynamic_loader import DynamicLoader
 from trivox_conductor.common.logger import logger
-from trivox_conductor.common.logging import setup_logging, resolve_log_levels
+from trivox_conductor.common.logging import resolve_log_levels, setup_logging
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
 from trivox_conductor.common.settings import settings
+from trivox_conductor.common.settings.base_settings import BaseSettings
+from trivox_conductor.common.settings.settings_registry import register_setting
 from trivox_conductor.core.bootstrap import (
     ModulesLoader,
     ObserversLoader,
@@ -23,6 +26,29 @@ from trivox_conductor.core.registry.base_loader import (
     import_adapter_from_descriptor,
     load_descriptors,
 )
+
+
+@dataclass(frozen=True)
+class AppSettingsModel:
+    """
+    Configuration data for the Application.
+
+    :cvar pipelines_dir (str): Directory path for storing pipeline configurations.
+    """
+
+    pipelines_dir: str = f"{trivox_constants.ROOT_DIR}/.trivox/profiles"
+
+
+@register_setting()
+class AppSettings(BaseSettings):
+    """
+    Settings for the Application.
+    """
+
+    name = "app"
+
+    def __init__(self):
+        super().__init__(asdict(AppSettingsModel()))
 
 
 def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
@@ -60,9 +86,12 @@ def initialize(verbose_level: Optional[int] = None) -> None:
     """
     Initialize the Trivox Conductor application.
 
+    - Resolve logging levels.
     - Setup logging with appropriate overrides.
     - Load all modules to register commands, settings, and strategies.
     - Load local plugins from the 'plugins' directory.
+    - Load Observers.
+    - Populate settings. This must be done after loading modules/plugins.
     """
     app_level, root_level = resolve_log_levels(verbose_level)
 

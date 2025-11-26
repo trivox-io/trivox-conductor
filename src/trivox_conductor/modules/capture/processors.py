@@ -21,8 +21,6 @@ Design notes
 
 from __future__ import annotations
 
-import sys
-
 from trivox_conductor.common.base_processor import (
     TrivoxCaptureCommandProcessor,
 )
@@ -51,45 +49,22 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Optional selections
-        self._scene = self._kwargs.pop("scene", None)
-        self._profile = self._kwargs.pop("profile", None)
+        # self.initialize_context()
+        # logger.debug("Setup observers context")
+        # manifest_service = ManifestService()
+        # watcher_service = WatcherService(WatcherRegistry, settings=settings)
 
-        # Connection overrides (only include if provided)
-        overrides = {
-            k: v
-            for k, v in {
-                "host": self._kwargs.pop("host"),
-                "port": self._kwargs.pop("port"),
-                "password": self._kwargs.pop("password"),
-                "request_timeout_sec": self._kwargs.pop("request_timeout_sec"),
-            }.items()
-            if v is not None
-        }
-        self.initialize_context(overrides)
-        logger.debug("Setup observers context")
-        manifest_service = ManifestService()
-        watcher_service = WatcherService(WatcherRegistry, settings=settings)
+        # ctx = ObserverContext(
+        #     profile_key=self._pipeline_profile_key,
+        #     profile=trivox_context.profile,
+        #     manifest_service=manifest_service,
+        #     watcher_service=watcher_service,
+        # )
 
-        ctx = ObserverContext(
-            profile_key=self._pipeline_profile_key,
-            profile=trivox_context.profile,
-            manifest_service=manifest_service,
-            watcher_service=watcher_service,
-        )
-
-        attach_all_observers(ctx)
+        # attach_all_observers(ctx)
 
     def build_service(self):
         return CaptureService(CaptureRegistry, settings)
-
-    def build_call_kwargs(self, action: str) -> dict:
-        if action == "start":
-            return {
-                "scene": self._scene,
-                "profile": self._profile,
-            }
-        return {}
 
     def run(self):
         # Implement the command processing logic here
