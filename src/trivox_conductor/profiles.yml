@@ -48,4 +48,4 @@ profiles:
         capture_started: true
         capture_stopped: true
       watcher:
-        start_on_capture_started: true
+        autostart_watcher: true

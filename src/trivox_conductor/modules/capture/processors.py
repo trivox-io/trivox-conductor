@@ -49,19 +49,19 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.initialize_context()
-        # logger.debug("Setup observers context")
+        logger.debug("Setup observers context")
         # manifest_service = ManifestService()
         # watcher_service = WatcherService(WatcherRegistry, settings=settings)
 
-        # ctx = ObserverContext(
-        #     profile_key=self._pipeline_profile_key,
-        #     profile=trivox_context.profile,
-        #     manifest_service=manifest_service,
-        #     watcher_service=watcher_service,
-        # )
+        ctx = ObserverContext(
+            session_id=self._session_id,
+            profile=trivox_context.profile,
+            profile_overrides=trivox_context.overrides,
+            # manifest_service=manifest_service,
+            # watcher_service=watcher_service,
+        )
 
-        # attach_all_observers(ctx)
+        attach_all_observers(ctx)
 
     def build_service(self):
         return CaptureService(

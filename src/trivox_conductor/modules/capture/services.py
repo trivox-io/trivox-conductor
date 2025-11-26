@@ -38,11 +38,9 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from trivox_conductor.common.logger import logger
 from trivox_conductor.core.contracts.capture import CaptureAdapter
-
-# from trivox_conductor.core.events import topics
-# from trivox_conductor.core.events.bus import BUS
+from trivox_conductor.core.events import topics
+from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.preflights.preflight_engine import run_preflights
-from trivox_conductor.core.profiles.profile_models import PipelineProfile
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.services.base_service import BaseService
 
@@ -162,15 +160,17 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self._state.start(self._session_id)
         self._store.save(self._state)
         logger.info("capture.started - session_id=%s", self._state.session_id)
-        # # BUS.publish(
-        # #     topics.CAPTURE_STARTED,
-        # #     {
-        # #         "session_id": session_id,
-        # #         "profile_key": (
-        # #             pipeline_profile.key if pipeline_profile else None
-        # #         ),
-        # #     },
-        # # )
+        BUS.publish(
+            topics.CAPTURE_STARTED,
+            {
+                "session_id": self._state.session_id,
+                "profile_key": (
+                    self._pipeline_profile.key
+                    if self._pipeline_profile
+                    else None
+                ),
+            },
+        )
 
     def stop(self):
         """

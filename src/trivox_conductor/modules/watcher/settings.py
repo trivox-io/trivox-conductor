@@ -16,9 +16,9 @@ class WatcherSettingsModel:
     :cvar filename_slug (str): Optional default slug for filenames.
     """
 
-    watch_path: str = ""
+    # watch_path: str = ""
     stable_wait_ms: int = 1500
-    filename_slug: str = ""  # optional default slug
+    # filename_slug: str = ""  # optional default slug
 
 
 @register_setting()

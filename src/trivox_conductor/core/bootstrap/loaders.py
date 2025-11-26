@@ -93,11 +93,16 @@ class ObserversLoader(BaseLoader):
 
     def _iter_modules(self, package_name: str) -> Iterator[tuple[str, Path]]:
         pkg = importlib.import_module(package_name)
-        base = Path(pkg.__path__[0])
-        for _finder, name, is_pkg in pkgutil.iter_modules(pkg.__path__):
-            # we want modules, not subpackages, but you can tweak this
-            full = f"{pkg.__name__}.{name}"
-            yield full, base / name
+        base_dir = Path(pkg.__path__[0])
+
+        # walk_packages will give you every module / subpackage under pkg.__path__
+        prefix = pkg.__name__ + "."
+        for mod_info in pkgutil.walk_packages(pkg.__path__, prefix):
+            mod_name = mod_info.name
+            # best-effort path for logging / inspection; not needed for import
+            rel_parts = mod_name[len(prefix) :].split(".")
+            mod_path = base_dir.joinpath(*rel_parts)
+            yield mod_name, mod_path
 
     def discover(self, ctx: LoaderContext) -> Iterable[Candidate]:
         for pkg_name in self._cfg.packages:

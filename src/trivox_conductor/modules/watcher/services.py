@@ -26,7 +26,7 @@ class WatcherService(BaseService[WatcherSettingsModel, WatcherAdapter]):
         self,
         registry: WatcherRegistry,
         settings: Dict,
-        correlator: Optional[SessionCorrelator] = None,
+        **kwargs,
     ):
         """
         :param registry: WatcherRegistry instance for adapter management.
@@ -38,34 +38,27 @@ class WatcherService(BaseService[WatcherSettingsModel, WatcherAdapter]):
         :param correlator: Optional SessionCorrelator for filename to session mapping.
         :type correlator: Optional[SessionCorrelator]
         """
-        super().__init__(registry, settings)
-        self._correlator = correlator or SessionCorrelator()
+        super().__init__(registry, settings, **kwargs)
+        self._correlator = kwargs.get("correlator") or SessionCorrelator()
 
     def start(
         self,
-        session_id: Optional[str] = None,
-        overrides: Optional[Mapping[str, Any]] = None,
     ):
         """
         Start the active WatcherAdapter with configured settings.
-
-        :param session_id: Optional fallback session ID for detections.
-        :type session_id: Optional[str]
         """
-        if not session_id:
+        if not self._session_id:
             raise ValueError("session_id is required")
 
         cfg_dict = asdict(self._settings)
-        cfg_dict["session_id"] = session_id
-        if overrides:
-            cfg_dict.update(overrides)
+        cfg_dict["session_id"] = self._session_id
+        if self._profile_overrides:
+            cfg_dict.update(self._profile_overrides)
         logger.debug(
             f"Applying overrides to WatcherAdapter config: {cfg_dict}"
         )
         adapter = self._get_configured_adapter(overrides=cfg_dict)
         self._configure_adapter(adapter)
-        logger.debug(f"Path to watch: {self._settings.watch_path}")
-        adapter.set_watch_path(self._settings.watch_path)
         adapter.start()
         # Real adapter would emit events; here we keep service ready for extra rules.
 

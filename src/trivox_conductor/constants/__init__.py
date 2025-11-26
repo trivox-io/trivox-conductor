@@ -72,8 +72,9 @@ PLUGINS_LOADER = PluginLoaderInfo(
 )
 OBSERVERS_LOADER = ObserverLoaderInfo(
     packages=(
-        "trivox_conductor.core.manifests",
-        "trivox_conductor.core.observers",
+        # "trivox_conductor.core.manifests",
+        # "trivox_conductor.core.observers",
+        "trivox_conductor.modules",
     ),
     module_name_suffixes=("_observer",),
 )

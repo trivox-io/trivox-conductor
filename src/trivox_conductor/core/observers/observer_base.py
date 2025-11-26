@@ -16,8 +16,9 @@ class ObserverContext:
     (GUI/daemon/etc.). Everything is optional so observers can degrade gracefully.
     """
 
-    profile_key: Optional[str] = None
+    session_id: Optional[str] = None
     profile: Optional[PipelineProfile] = None
+    profile_overrides: Optional[dict] = None
 
     # core services (optional)
     manifest_service: Any = None  # e.g. ManifestService

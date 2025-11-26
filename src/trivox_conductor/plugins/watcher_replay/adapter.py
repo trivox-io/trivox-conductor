@@ -40,8 +40,7 @@ class ReplayWatcherAdapter(WatcherAdapter):
     }
 
     def __init__(self) -> None:
-        self._cfg: Dict = {}
-        self._sec: Dict = {}
+        super().__init__()
         self._path: Optional[Path] = None
 
         self._thread: Optional[threading.Thread] = None
@@ -50,11 +49,11 @@ class ReplayWatcherAdapter(WatcherAdapter):
         # path -> (last_size, stable_count)
         self._seen: Dict[Path, Tuple[int, int]] = {}
 
-    def configure(self, settings: Dict, secrets: Dict) -> None:
-        self._cfg, self._sec = settings or {}, secrets or {}
+    def configure(self, settings: Dict) -> None:
+        self._settings = settings or {}
         if not self._path:
             # allow config to define the path if set_watch_path wasn't called yet
-            watch_path = self._cfg.get("watch_path")
+            watch_path = self._settings.get("record_dir")
             if watch_path:
                 self.set_watch_path(watch_path)
 
@@ -110,8 +109,8 @@ class ReplayWatcherAdapter(WatcherAdapter):
         self._thread = None
 
     def _run_loop(self) -> None:
-        poll_interval = float(self._cfg.get("poll_interval_sec", 2.0))
-        patterns = self._cfg.get("patterns") or ["*.*"]
+        poll_interval = float(self._settings.get("poll_interval_sec", 2.0))
+        patterns = self._settings.get("patterns") or ["*.*"]
 
         logger.debug(
             "ReplayWatcherAdapter loop starting: path=%s, interval=%.1fs, patterns=%s",
