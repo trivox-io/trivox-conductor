@@ -26,13 +26,10 @@ from trivox_conductor.common.base_processor import (
 )
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
-from trivox_conductor.core.manifests.manifest_service import ManifestService
 from trivox_conductor.core.observers.bootstrap import attach_all_observers
 from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.registry.capture_registry import CaptureRegistry
-from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.trivox_context import trivox_context
-from trivox_conductor.modules.watcher.services import WatcherService
 
 from .constants import CAPTURE_MODULE
 from .services import CaptureService
@@ -50,15 +47,13 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         logger.debug("Setup observers context")
-        # manifest_service = ManifestService()
-        # watcher_service = WatcherService(WatcherRegistry, settings=settings)
 
+        # TODO: This context is basically the same as trivox_context; unify them
+        # Also, attach observers in the parent class
         ctx = ObserverContext(
             session_id=self._session_id,
             profile=trivox_context.profile,
             profile_overrides=trivox_context.overrides,
-            # manifest_service=manifest_service,
-            # watcher_service=watcher_service,
         )
 
         attach_all_observers(ctx)

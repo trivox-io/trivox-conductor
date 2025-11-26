@@ -84,6 +84,9 @@ class TrivoxCaptureCommandProcessor(BaseCommandProcessor):
 
     def _initialize_context(self):
         """Set connection overrides for the processor."""
+        # TODO: Sessions have a manager; use it to create/get session by ID
+        # instead of fiddling with trivox_context directly
+        # TODO: Profile overrides should be gotten by role, not globally
         data = ContextBuilderData(
             role=self.ROLE,
             pipeline_profile_key=self._pipeline_profile_key,
