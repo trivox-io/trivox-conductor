@@ -43,7 +43,7 @@ class ActionArgument(ArgumentType):
         super().__init__(
             "action",
             str,
-            "Action",
+            f"Action to perform. Choices: {', '.join(choices_iter)}",
             choices=choices_iter,
             required=True,
         )
@@ -60,7 +60,7 @@ class SessionIDArgument(ArgumentType):
         super().__init__(
             "session_id",
             str,
-            "Session ID",
+            "The current session ID for this run",
             default=None,
         )
 
@@ -76,13 +76,13 @@ class TrivoxConductorCommand(BaseCommand):
         ArgumentType(
             "config",
             str,
-            "Path to the configuration file.",
+            "Path to a configuration file that overrides default settings",
             required=False,
         ),
         ArgumentType(
             "pipeline_profile",
             str,
-            "Profile to select before start",
+            "Trivox pipeline profile to select before start",
             default="default_profile",
         ),
         SessionIDArgument(),

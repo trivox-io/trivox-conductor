@@ -48,21 +48,30 @@ class CaptureCommand(TrivoxConductorCommand):
     args = [
         ActionArgument(*CAPTURE_MODULE.actions),
         # --- connection overrides (optional) ---
-        ArgumentType("host", str, "OBS host", default=None),
-        ArgumentType("port", int, "OBS port", default=None),
-        ArgumentType("password", str, "OBS password", default=None),
+        ArgumentType(
+            "host", str, "OBS host for websocket connection", default=None
+        ),
+        ArgumentType(
+            "port", int, "OBS port for websocket connection", default=None
+        ),
+        ArgumentType(
+            "password",
+            str,
+            "OBS password for websocket connection",
+            default=None,
+        ),
         ArgumentType(
             "request_timeout_sec",
             float,
-            "OBS request timeout (sec)",
+            "OBS request timeout (sec) for websocket connection",
             default=None,
         ),
         # --- selection (optional) ---
         ArgumentType(
-            "scene", str, "Scene to select before start", default=None
+            "scene", str, "OBS Scene to select before start", default=None
         ),
         ArgumentType(
-            "profile", str, "Profile to select before start", default=None
+            "profile", str, "OBS Profile to select before start", default=None
         ),
     ]
 
@@ -78,14 +87,6 @@ class CaptureCommand(TrivoxConductorCommand):
     Description:
         This command allows you to start or stop capture operations
         using the Capture module.
-    
-    Arguments:
-        --action (str): The action to perform. Choices are 'start', 'stop', 'list_scenes', 'list_profiles'.
-        --session_id (str): The session ID for the capture operation.
-        --host (str, optional): The OBS host address.
-        --port (int, optional): The OBS port number.
-        --password (str, optional): The OBS password.
-        --request_timeout_sec (float, optional): The request timeout in seconds.
     """
 
     def _execute(self, **kwargs):
