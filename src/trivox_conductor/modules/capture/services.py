@@ -64,16 +64,16 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         self,
         registry: CaptureRegistry,
         settings: Dict,
-        session_id: Optional[str] = None,
-        pipeline_profile: Optional[PipelineProfile] = None,
-        profile_overrides: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ):
         """
         :param registry: CaptureRegistry instance for adapter management.
         :type registry: CaptureRegistry
         """
         super().__init__(
-            registry, settings, session_id, pipeline_profile, profile_overrides
+            registry,
+            settings,
+            **kwargs,
         )
 
         self._store = CaptureStateStore()
@@ -106,39 +106,30 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
         return adapter.list_profiles() if adapter else []
 
     # ----- Commands -----
-    def start(
-        self,
-        scene: Optional[str] = None,
-        profile: Optional[str] = None,
-    ):
+    def start(self):
         """
         Start the capture process using the active adapter.
 
-        :param session_id: The session ID for the capture operation.
-        :type session_id: str
-
-        :param scene: Optional scene name to select before starting.
-        :type scene: Optional[str]
-
-        :param profile: Optional profile name to select before starting.
-        :type profile: Optional[str]
-
         :raises RuntimeError: If preflight checks fail or no adapter is configured.
         """
+        logger.debug(
+            "capture.start_initiated - session_id=%s", self._session_id
+        )
         if not self._session_id:
             raise ValueError("session_id is required")
 
         # Build merged config (base settings + overrides + session_id)
-        cfg_dict = asdict(self._settings)
-        cfg_dict["session_id"] = self._session_id
+        cfg_dict: dict[str, Any] = {"session_id": self._session_id}
         if self._profile_overrides:
             cfg_dict.update(self._profile_overrides)
+        logger.debug(f"Capture config for start: {cfg_dict}")
 
         adapter = self._get_configured_adapter(overrides=cfg_dict)
+        logger.debug("capture.adapter_configured - %s", adapter)
 
         # --- Preflight: collect failures and bail once, with a helpful message ---
         failures = run_preflights(
-            role="capture",
+            role=CAPTURE_MODULE.key,
             profile=self._pipeline_profile,
             adapter=adapter,
             base_settings=cfg_dict,
@@ -165,58 +156,21 @@ class CaptureService(BaseService[CaptureSettingsModel, CaptureAdapter]):
             )
             return
 
-        # --- Safe to proceed: select scene/profile, then start ---
-        try:
-            # Prefer explicit CLI args, then pipeline/config overrides, then model defaults
-            chosen_scene = (
-                scene
-                or cfg_dict.get("default_scene")
-                or getattr(self._settings, "default_scene", None)
-            )
-            chosen_profile = (
-                profile
-                or cfg_dict.get("default_profile")
-                or getattr(self._settings, "default_profile", None)
-            )
-
-            logger.debug(
-                "capture.selecting - scene=%r (arg=%r, cfg=%r), "
-                "profile=%r (arg=%r, cfg=%r)",
-                chosen_scene,
-                scene,
-                cfg_dict.get("default_scene"),
-                chosen_profile,
-                profile,
-                cfg_dict.get("default_profile"),
-            )
-
-            if chosen_scene:
-                adapter.select_scene(chosen_scene)
-            if chosen_profile:
-                adapter.select_profile(chosen_profile)
-
-        except Exception as e:
-            logger.error(
-                "capture.select_failed - %s - Scene: %r, Profile: %r",
-                str(e),
-                chosen_scene,
-                chosen_profile,
-            )
-            raise
+        logger.info("capture.preflight_passed - proceeding to start")
 
         adapter.start_capture()
         self._state.start(self._session_id)
         self._store.save(self._state)
         logger.info("capture.started - session_id=%s", self._state.session_id)
-        # BUS.publish(
-        #     topics.CAPTURE_STARTED,
-        #     {
-        #         "session_id": session_id,
-        #         "profile_key": (
-        #             pipeline_profile.key if pipeline_profile else None
-        #         ),
-        #     },
-        # )
+        # # BUS.publish(
+        # #     topics.CAPTURE_STARTED,
+        # #     {
+        # #         "session_id": session_id,
+        # #         "profile_key": (
+        # #             pipeline_profile.key if pipeline_profile else None
+        # #         ),
+        # #     },
+        # # )
 
     def stop(self):
         """

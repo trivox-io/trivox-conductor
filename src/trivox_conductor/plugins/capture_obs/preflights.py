@@ -123,7 +123,6 @@ class ObsLaunchCheck:
             return None
 
         auto_launch = bool(settings.get("auto_launch_obs", False))
-        wait_sec = float(settings.get("obs_launch_wait_sec", 5.0))
 
         # 1) If OBS is already reachable, we're done.
         logger.debug("Checking initial OBS health")
@@ -134,6 +133,7 @@ class ObsLaunchCheck:
                     "capture.preflight_ok - obs_launch: OBS already reachable"
                 )
                 return None
+            raise RuntimeError(health.get("message", "obs-not-ok"))
         except Exception as e:
             logger.warning("obs_launch.initial_health_failed: %s", e)
 
@@ -141,8 +141,9 @@ class ObsLaunchCheck:
         logger.info("OBS not reachable via health check")
         if not auto_launch:
             # Let capture.obs_health complain later – this check is a no-op.
-            logger.debug(
-                "capture.preflight_skip - obs_launch: auto_launch_obs=False"
+            logger.warning(
+                "capture.preflight_skip - obs_launch: auto_launch_obs=False "
+                "Make sure to add auto_launch_obs=True to profile overrides "
             )
             return None
 
@@ -166,6 +167,8 @@ class ObsLaunchCheck:
 
         if exe_path is None:
             exe_path = _auto_find_obs_exe()
+
+        logger.info("OBS executable path resolved to: %s", exe_path)
 
         if exe_path is None:
             return PreflightFailure(
@@ -207,34 +210,78 @@ class ObsLaunchCheck:
             )
 
         # 5) Give OBS a bit of time to start up before health check
-        logger.debug(
-            "capture.obs_launch: waiting %.1fs for OBS to come up", wait_sec
-        )
-        time.sleep(wait_sec)
-
-        # 6) Retry health
-        logger.debug("obs_launch: checking OBS health after launch")
-        try:
-            health = adapter.health()
-        except Exception as e:
-            return PreflightFailure(
-                id=self.id,
-                message=f"OBS health after launch failed: {e}",
-                required=self.default_required,
-            )
-
-        if not health.get("ok", False):
-            return PreflightFailure(
-                id=self.id,
-                message="OBS started but health check is still not OK: "
-                + health.get("message", "unknown"),
-                required=self.default_required,
-            )
+        wait_sec = float(settings.get("obs_launch_wait_sec", 5.0))
+        max_attempts = int(settings.get("obs_launch_max_attempts", 3))
+        if max_attempts < 1:
+            max_attempts = 1
 
         logger.debug(
-            "capture.preflight_ok - obs_launch: OBS started and reachable"
+            "capture.obs_launch: waiting for OBS to come up "
+            "(max_attempts=%d, interval=%.1fs)",
+            max_attempts,
+            wait_sec,
         )
-        return None
+
+        last_error: Optional[Exception] = None
+        last_health: Optional[dict] = None
+
+        for attempt in range(1, max_attempts + 1):
+            logger.debug(
+                "obs_launch: attempt %d/%d - sleeping %.1fs "
+                "before health check",
+                attempt,
+                max_attempts,
+                wait_sec,
+            )
+            time.sleep(wait_sec)
+
+            try:
+                health = adapter.health()
+                last_health = health
+                if health.get("ok", False):
+                    logger.debug(
+                        "capture.preflight_ok - obs_launch: "
+                        "OBS reachable after attempt %d",
+                        attempt,
+                    )
+                    return None
+
+                logger.warning(
+                    "obs_launch.health_not_ok_attempt_%d: %s",
+                    attempt,
+                    health.get("message", "unknown"),
+                )
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    "obs_launch.health_failed_attempt_%d: %s",
+                    attempt,
+                    e,
+                )
+
+        # 6) Still not OK after all attempts → fail
+        if last_health is not None:
+            msg = (
+                "OBS started but health check is still not OK after "
+                f"{max_attempts} attempts: "
+                f"{last_health.get('message', 'unknown')}"
+            )
+        elif last_error is not None:
+            msg = (
+                "OBS started but health check is still not OK after "
+                f"{max_attempts} attempts: {last_error}"
+            )
+        else:
+            msg = (
+                "OBS started but health check is still not OK after "
+                f"{max_attempts} attempts (no health response)."
+            )
+
+        return PreflightFailure(
+            id=self.id,
+            message=msg,
+            required=self.default_required,
+        )
 
 
 PreflightRegistry.register("capture", ObsLaunchCheck())

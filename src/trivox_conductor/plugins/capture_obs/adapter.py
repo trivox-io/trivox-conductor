@@ -45,8 +45,9 @@ so that callers do not need to import SDK-specific error types.
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import suppress
-from typing import Dict, List, Optional, ClassVar, Tuple
+from typing import ClassVar, Dict, List, Optional, Tuple
 
 import obsws_python as obsws
 from obsws_python import error as obs_err
@@ -116,14 +117,14 @@ class OBSAdapter(CaptureAdapter):
     )
 
     def __init__(self):
-        self._settings: Dict = {}
-        self._secrets: Dict = {}
+        super().__init__()
         self._client: Optional[obsws.ReqClient] = None
-        self._session_id: Optional[str] = None
 
-    def configure(self, settings: Dict, secrets: Dict):
+    def __repr__(self):
+        return f"<OBSAdapter(session_id={self._session_id}, settings={self._settings})>"
+
+    def configure(self, settings: Dict):
         self._settings = settings or {}
-        self._secrets = secrets or {}
         self._session_id = self._settings.get("session_id")
 
     def _ensure_client(self) -> obsws.ReqClient:
@@ -230,10 +231,32 @@ class OBSAdapter(CaptureAdapter):
         # (You can log a warning from your central logger here)
 
     def start_capture(self):
+        # --- Safe to proceed: select scene/profile, then start ---
+        try:
+            # Prefer explicit CLI args, then pipeline/config overrides, then model defaults
+            chosen_scene = self._settings.get("scene")
+            chosen_profile = self._settings.get("profile")
+
+            logger.debug(
+                f"Selecting OBS scene: {chosen_scene}, profile: {chosen_profile}"
+            )
+
+            if chosen_scene:
+                self.select_scene(chosen_scene)
+            if chosen_profile:
+                self.select_profile(chosen_profile)
+
+        except Exception as e:
+            logger.error(f"OBS pre-start selection failed: {e}")
+            raise
+
         c = self._ensure_client()
         try:
-            # Apply mixer settings *before* we start recording
+            # 1) Apply mixer
             self._apply_mixer(c)
+            # 2) Apply record directory from profile overrides, if any
+            self._ensure_record_dir(c)
+            # 3) Start recording
             c.start_record()  # StartRecord
         except obs_err.OBSSDKTimeoutError as e:
             BUS.publish(
@@ -242,7 +265,7 @@ class OBSAdapter(CaptureAdapter):
             )
             raise RuntimeError(f"StartRecord failed: {e}") from e
 
-        BUS.publish(topics.CAPTURE_STARTED, {"session_id": self._session_id})
+        # BUS.publish(topics.CAPTURE_STARTED, {"session_id": self._session_id})
 
     def stop_capture(self):
         c = self._ensure_client()
@@ -317,3 +340,33 @@ class OBSAdapter(CaptureAdapter):
                 )
             except Exception as e:
                 logger.warning("obs.mixer.mic_failed - %s: %s", mic_name, e)
+
+    def _ensure_record_dir(self, c: obsws.ReqClient) -> None:
+        """
+        If `record_dir` is provided in settings, try to configure OBS
+        to use that directory for recordings.
+
+        This is OBS-specific and safe to no-op if the client doesn't
+        expose the corresponding request.
+        """
+        record_dir = self._settings.get("record_dir")
+        if not record_dir:
+            return
+
+        set_dir = getattr(c, "set_record_directory", None)
+        if not callable(set_dir):
+            logger.warning(
+                "obs.record_dir_unsupported - obsws client has no set_record_directory()"
+            )
+            return
+
+        try:
+            os.makedirs(record_dir, exist_ok=True)
+            set_dir(record_dir)
+            logger.debug("obs.record_dir.set - %s", record_dir)
+        except Exception as e:
+            logger.warning(
+                "obs.record_dir_failed - path=%s error=%s",
+                record_dir,
+                e,
+            )

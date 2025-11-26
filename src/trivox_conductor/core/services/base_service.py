@@ -115,12 +115,9 @@ class BaseService(Generic[TConf, TAdapter]):
         self,
         *,
         overrides: Optional[Mapping[str, Any]] = None,
-        secrets: Optional[Mapping[str, Any]] = None,
     ):
         adapter = self._require_adapter()
-        self._configure_adapter(
-            adapter, overrides=overrides or {}, secrets=secrets or {}
-        )
+        self._configure_adapter(adapter, overrides=overrides or {})
         return adapter
 
     def _require_adapter(self) -> TAdapter:
@@ -142,11 +139,10 @@ class BaseService(Generic[TConf, TAdapter]):
         adapter: TAdapter,
         *,
         overrides: Mapping[str, Any] = None,
-        secrets: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         base = dict(self._settings_dict())
         if overrides:
             base.update(overrides)
         # adapter is assumed to implement .configure(settings, secrets)
-        adapter.configure(base, secrets or {})
+        adapter.configure(base)
         return base

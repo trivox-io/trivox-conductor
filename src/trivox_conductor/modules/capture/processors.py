@@ -64,7 +64,13 @@ class CaptureCommandProcessor(TrivoxCaptureCommandProcessor):
         # attach_all_observers(ctx)
 
     def build_service(self):
-        return CaptureService(CaptureRegistry, settings)
+        return CaptureService(
+            CaptureRegistry,
+            settings,
+            session_id=self._session_id,
+            pipeline_profile=trivox_context.profile,
+            profile_overrides=trivox_context.overrides,
+        )
 
     def run(self):
         # Implement the command processing logic here

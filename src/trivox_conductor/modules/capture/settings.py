@@ -40,20 +40,20 @@ class CaptureSettingsModel:
     :cvar overlay_enabled (bool): Flag to enable overlay display.
     """
 
-    default_scene: str = ""
-    default_profile: str = ""
+    # default_scene: str = ""
+    # default_profile: str = ""
     beep_on_start_stop: bool = True
-    overlay_enabled: bool = False
-    # OBS connection
-    host: str = "127.0.0.1"
-    port: int = 4455
-    password: str = ""  # set in your local secrets or settings
-    request_timeout_sec: float = 3.0
-    # OBS Audio
-    desktop_source_name: str = "Desktop Audio"
-    capture_desktop_audio: bool = True
-    mic_source_name: str = "Mic/Aux"
-    capture_mic_audio: bool = False
+    # overlay_enabled: bool = False
+    # # OBS connection
+    # host: str = "127.0.0.1"
+    # port: int = 4455
+    # password: str = ""  # set in your local secrets or settings
+    # request_timeout_sec: float = 3.0
+    # # OBS Audio
+    # desktop_source_name: str = "Desktop Audio"
+    # capture_desktop_audio: bool = True
+    # mic_source_name: str = "Mic/Aux"
+    # capture_mic_audio: bool = False
 
 
 @register_setting()

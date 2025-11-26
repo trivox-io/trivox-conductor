@@ -31,7 +31,7 @@ their own role-specific methods while preserving this common lifecycle.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, TypedDict
+from typing import Dict, List, Optional, TypedDict
 
 
 class AdapterHealth(TypedDict, total=False):
@@ -73,17 +73,18 @@ class Adapter(ABC):
 
     meta: AdapterMeta
 
+    def __init__(self):
+        self._settings: Dict = {}
+        self._session_id: Optional[str] = None
+
     @abstractmethod
-    def configure(self, settings: Dict, secrets: Dict):
+    def configure(self, settings: Dict):
         """
         Apply configuration settings and secrets to the adapter.
         Called once after instantiation, before start().
 
         :param settings: Non-sensitive configuration dictionary.
         :type settings: Dict
-
-        :param secrets: Sensitive configuration dictionary.
-        :type secrets: Dict
         """
 
     def start(self):  # watchers/servers
