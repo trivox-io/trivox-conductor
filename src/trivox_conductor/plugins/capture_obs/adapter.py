@@ -54,9 +54,9 @@ from obsws_python import error as obs_err
 
 from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.core.contracts.base_contract import AdapterMeta
-from trivox_conductor.core.contracts.capture import CaptureAdapter
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.events.bus import BUS
+from trivox_conductor.modules.capture.contracts import CaptureAdapter
 
 logger = logging.getLogger(__name__)
 

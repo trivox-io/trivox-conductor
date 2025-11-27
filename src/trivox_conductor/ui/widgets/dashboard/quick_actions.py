@@ -6,8 +6,8 @@ from venv import logger
 from PySide6 import QtWidgets
 
 from trivox_conductor.common.settings import settings
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.trivox_context import trivox_context
+from trivox_conductor.modules.capture.registry import CaptureRegistry
 from trivox_conductor.modules.capture.services import CaptureService
 from trivox_conductor.ui.common.handler_registry import HandlerRegistry
 from trivox_conductor.ui.widgets.base_widget import BaseWidget

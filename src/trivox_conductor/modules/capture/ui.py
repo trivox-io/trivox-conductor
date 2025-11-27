@@ -3,9 +3,9 @@ from __future__ import annotations
 from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
 from trivox_conductor.common.settings import settings
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.ui.nav_registry import ViewDescriptor, ViewRegistry
 
+from .registry import CaptureRegistry
 from .services import CaptureService
 
 

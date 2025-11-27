@@ -45,8 +45,8 @@ class BaseWorkerThread(QtCore.QThread):
         Stop the worker thread
         """
         self._is_running = False
-        self.quit()
         try:
+            self.quit()
             self.wait()
         except RuntimeError:
             pass

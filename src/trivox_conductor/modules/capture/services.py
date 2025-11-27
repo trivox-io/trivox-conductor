@@ -33,18 +33,17 @@ All external I/O is delegated to the adapter; this service composes policy and f
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List
 
 from trivox_conductor.common.logger import logger
-from trivox_conductor.core.contracts.capture import CaptureAdapter
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.events.bus import BUS
 from trivox_conductor.core.preflights.preflight_engine import run_preflights
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.services.base_service import BaseService
 
 from .constants import CAPTURE_MODULE
+from .contracts import CaptureAdapter
+from .registry import CaptureRegistry
 from .settings import CaptureSettingsModel
 from .state_store import CaptureStateStore
 

@@ -3,9 +3,9 @@ from typing import Dict
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
 from trivox_conductor.common.workers import BaseWorker, BaseWorkerThread
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.trivox_context import trivox_context
 
+from .registry import CaptureRegistry
 from .services import CaptureService
 
 

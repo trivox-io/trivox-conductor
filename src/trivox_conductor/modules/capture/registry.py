@@ -1,37 +1,13 @@
-"""
-Capture Adapter Registry
-=======================
-
-Role-specific registry for :class:`~trivox_conductor.core.contracts.capture.CaptureAdapter`
-implementations. Provides selection of an **active** adapter and lazy instantiation.
-
-Features
---------
-- **Typed isolation**: Only classes deriving from ``CaptureAdapter`` can be registered.
-- **Active selection**: ``set_active(name)`` pins the implementation to use.
-- **Lazy instantiation**: ``get_active()`` creates and caches one instance of the active class.
-- **Safe switching**: Changing the active name clears the cached instance.
-
-Lifecycle
----------
-Adapters are typically registered during app/plugin initialization (e.g., by
-loading ``plugin.yaml`` descriptors). Services then call ``get_active()`` to
-retrieve the singleton instance for the current process.
-
-Errors
-------
-- ``KeyError`` when setting an unknown adapter name.
-- ``None`` returned by ``get_active()`` if no active adapter has been selected.
-"""
-
 from __future__ import annotations
 
 from typing import Optional, Type
 
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
-from trivox_conductor.core.contracts.capture import CaptureAdapter
+from trivox_conductor.core.registry.role_registries import (
+    register_role_registry,
+)
 
-from .role_registries import register_role_registry
+from .contracts import CaptureAdapter
 
 
 class CaptureRegistry(EndpointRegistry[CaptureAdapter]):

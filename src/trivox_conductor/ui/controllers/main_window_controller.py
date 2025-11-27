@@ -3,9 +3,9 @@ from typing import Optional
 from PySide6 import QtCore, QtWidgets
 
 from trivox_conductor.common.logger import logger
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.ui.nav_registry import ViewDescriptor, ViewRegistry
+from trivox_conductor.modules.capture.registry import CaptureRegistry
 from trivox_conductor.ui.common.base_window_controller import (
     BaseWindowController,
 )

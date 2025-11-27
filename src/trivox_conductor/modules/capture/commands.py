@@ -31,10 +31,8 @@ from trivox_conductor.common.base_command import (
     OptionsArgument,
     TrivoxConductorCommand,
 )
-from trivox_conductor.common.commands.argument_type import ArgumentType
 from trivox_conductor.common.commands.base_command import register_command
 from trivox_conductor.common.logger import logger
-from trivox_conductor.core.registry.capture_registry import CaptureRegistry
 
 from .constants import CAPTURE_MODULE
 from .processors import CaptureCommandProcessor
