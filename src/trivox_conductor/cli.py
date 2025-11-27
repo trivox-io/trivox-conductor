@@ -40,10 +40,17 @@ class TrivoxCLI(BaseCLIApp):
         self._add_run_command(self.subparsers)
 
     def _add_run_command(self, subparsers: argparse._SubParsersAction):
-        subparsers.add_parser(
+        run_command = subparsers.add_parser(
             "run",
             help="Run the Trivox Conductor GUI application.",
             description="Launch the Trivox Conductor GUI application.",
+        )
+        # add pipeline profile argument
+        run_command.add_argument(
+            "--pipeline_profile",
+            type=str,
+            default=None,
+            help="Specify the pipeline profile to use in the GUI.",
         )
 
     def run_command(self, args: argparse.Namespace):

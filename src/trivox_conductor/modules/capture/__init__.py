@@ -22,6 +22,7 @@ by the application bootstrap.
 from .commands import CaptureCommand
 from .preflights import DiskSpaceCheck, WindowForegroundCheck
 from .settings import CaptureSettings
+from .strategies import CaptureStrategy
 from .ui import CaptureMainView
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "DiskSpaceCheck",
     "WindowForegroundCheck",
     "CaptureMainView",
+    "CaptureStrategy",
 ]

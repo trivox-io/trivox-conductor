@@ -1,12 +1,20 @@
+from typing import Optional
+
 from PySide6 import QtCore, QtWidgets
 
 from trivox_conductor.common.logger import logger
-from trivox_conductor.core.session.session_manager import SessionManager
+from trivox_conductor.core.registry.capture_registry import CaptureRegistry
+from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.ui.nav_registry import ViewDescriptor, ViewRegistry
 from trivox_conductor.ui.common.base_window_controller import (
     BaseWindowController,
 )
 from trivox_conductor.ui.common.controllers_mediator import ControllersMediator
+from trivox_conductor.ui.common.handler_registry import HandlerRegistry
+from trivox_conductor.ui.handlers.capture_handlers import (
+    StartCaptureHandler,
+    StopCaptureHandler,
+)
 from trivox_conductor.ui.views.main_window_view import MainWindowView
 from trivox_conductor.ui.widgets.dashboard.quick_actions import (
     QuickActionsWidget,
@@ -17,40 +25,6 @@ from trivox_conductor.ui.widgets.dashboard.recorder_session import (
 from trivox_conductor.ui.widgets.dashboard.simple_card import SimpleCard
 
 
-# optional: feature checks
-def _has_capture_adapter() -> bool:
-    try:
-        from trivox_conductor.core.registry.capture_registry import (
-            CaptureRegistry,
-        )
-
-        # adapt to your real API:
-        return bool(
-            getattr(CaptureRegistry, "get_active", None)
-            and CaptureRegistry.get_active()
-        ) or bool(
-            getattr(CaptureRegistry, "all", None) and CaptureRegistry.all()
-        )
-    except Exception:
-        return False
-
-
-def _has_watcher() -> bool:
-    try:
-        from trivox_conductor.core.registry.watcher_registry import (
-            WatcherRegistry,
-        )
-
-        return bool(
-            getattr(WatcherRegistry, "get_active", None)
-            and WatcherRegistry.get_active()
-        ) or bool(
-            getattr(WatcherRegistry, "all", None) and WatcherRegistry.all()
-        )
-    except Exception:
-        return False
-
-
 class MainWindowController(BaseWindowController):
     """
     Main window controller
@@ -58,46 +32,43 @@ class MainWindowController(BaseWindowController):
     :extends: BaseWindowController
     """
 
-    def __init__(self, mediator: ControllersMediator):
+    def __init__(
+        self,
+        mediator: ControllersMediator,
+        pipeline_profile_key: Optional[str] = None,
+    ):
         """
         :param mediator: The controllers mediator
         :type mediator: ControllersMediator
         """
         super().__init__(mediator)
+        logger.debug("Mediator passed to MainWindowController: %s", mediator)
+        logger.debug("Pipeline profile: %s", pipeline_profile_key)
+        self._pipeline_profile_key = pipeline_profile_key
         self._window = MainWindowView()
-        self._context = self._build_view_context()
         self._view_rows: dict[int, int] = {}  # nav row -> stack index
 
         self.initialize_context()
         self._setup_dashboard_cards()
         self._setup_dynamic_views()
         self.__connect_signals()
-
-    def _build_view_context(self) -> dict:
-        """
-        Build the shared context dict passed into each view factory.
-        You can extend this as needed.
-        """
-        return {
-            "session_manager": SessionManager(),
-            "pipeline_profile": None,  # later: current profile if GUI selects it
-            # add more stuff here if views need it
-        }
+        self.__add_handlers()
 
     def _setup_dashboard_cards(self) -> None:
+        """
+        Setup the dashboard cards in the main window.
+        """
         w = self._window
 
         # Quick Actions (only show if we have any capture adapter)
         qa_layout = QtWidgets.QVBoxLayout(w.quick_actions)
         qa_layout.setContentsMargins(0, 0, 0, 0)
         qa_layout.setSpacing(0)
-        has_capture = _has_capture_adapter()
+        has_capture = CaptureRegistry.get_active()
         if has_capture:
             qa = QuickActionsWidget(parent=w.quick_actions)
             qa_layout.addWidget(qa)
             w.quick_actions.setVisible(True)
-        else:
-            w.quick_actions.setVisible(False)
 
         # Recorder & Session (visible if capture is meaningful; else hide)
         rs_layout = QtWidgets.QVBoxLayout(w.recorder_and_session)
@@ -107,56 +78,59 @@ class MainWindowController(BaseWindowController):
             rs = RecorderSessionWidget(parent=w.recorder_and_session)
             rs_layout.addWidget(rs)
             w.recorder_and_session.setVisible(True)
-        else:
-            w.recorder_and_session.setVisible(False)
 
-        # Pipeline Queue (nothing yet; show a label or hide entirely)
-        pq_layout = QtWidgets.QVBoxLayout(w.pipeline_queue)
-        pq_layout.setContentsMargins(0, 0, 0, 0)
-        pq_layout.setSpacing(0)
-        # for now: simple placeholder label; change to False to hide
-        pq = SimpleCard(
-            title="Pipeline Queue",
-            body="(coming soon)",
-            parent=w.pipeline_queue,
-        )
-        pq_layout.addWidget(pq)
-        w.pipeline_queue.setVisible(True)
+        # # Pipeline Queue (nothing yet; show a label or hide entirely)
+        # pq_layout = QtWidgets.QVBoxLayout(w.pipeline_queue)
+        # pq_layout.setContentsMargins(0, 0, 0, 0)
+        # pq_layout.setSpacing(0)
+        # # for now: simple placeholder label; change to False to hide
+        # pq = SimpleCard(
+        #     title="Pipeline Queue",
+        #     body="(coming soon)",
+        #     parent=w.pipeline_queue,
+        # )
+        # pq_layout.addWidget(pq)
+        # w.pipeline_queue.setVisible(True)
 
         # Replay Watch (on/off; for now label based on watcher existence)
         rw_layout = QtWidgets.QVBoxLayout(w.replay_watch)
         rw_layout.setContentsMargins(0, 0, 0, 0)
         rw_layout.setSpacing(0)
-        has_watch = _has_watcher()
-        rw = SimpleCard(
-            title="Replay / Watch",
-            body="Watcher available" if has_watch else "Watcher not available",
-            parent=w.replay_watch,
-        )
-        rw_layout.addWidget(rw)
-        w.replay_watch.setVisible(True)  # keep visible with status label
+        has_watch = WatcherRegistry.get_active()
+        if has_watch:
+            rw = SimpleCard(
+                title="Replay / Watch",
+                body=(
+                    "Watcher available"
+                    if has_watch
+                    else "Watcher not available"
+                ),
+                parent=w.replay_watch,
+            )
+            rw_layout.addWidget(rw)
+            w.replay_watch.setVisible(True)  # keep visible with status label
 
-        # Recent Outputs (placeholder)
-        ro_layout = QtWidgets.QVBoxLayout(w.recent_outputs)
-        ro_layout.setContentsMargins(0, 0, 0, 0)
-        ro_layout.setSpacing(0)
-        ro = SimpleCard(
-            title="Recent Outputs",
-            body="(coming soon)",
-            parent=w.recent_outputs,
-        )
-        ro_layout.addWidget(ro)
-        w.recent_outputs.setVisible(True)
+        # # Recent Outputs (placeholder)
+        # ro_layout = QtWidgets.QVBoxLayout(w.recent_outputs)
+        # ro_layout.setContentsMargins(0, 0, 0, 0)
+        # ro_layout.setSpacing(0)
+        # ro = SimpleCard(
+        #     title="Recent Outputs",
+        #     body="(coming soon)",
+        #     parent=w.recent_outputs,
+        # )
+        # ro_layout.addWidget(ro)
+        # w.recent_outputs.setVisible(True)
 
-        # System Health (placeholder)
-        sh_layout = QtWidgets.QVBoxLayout(w.system_health)
-        sh_layout.setContentsMargins(0, 0, 0, 0)
-        sh_layout.setSpacing(0)
-        sh = SimpleCard(
-            title="System Health", body="(coming soon)", parent=w.system_health
-        )
-        sh_layout.addWidget(sh)
-        w.system_health.setVisible(True)
+        # # System Health (placeholder)
+        # sh_layout = QtWidgets.QVBoxLayout(w.system_health)
+        # sh_layout.setContentsMargins(0, 0, 0, 0)
+        # sh_layout.setSpacing(0)
+        # sh = SimpleCard(
+        #     title="System Health", body="(coming soon)", parent=w.system_health
+        # )
+        # sh_layout.addWidget(sh)
+        # w.system_health.setVisible(True)
 
     def _setup_dynamic_views(self) -> None:
         """
@@ -215,6 +189,13 @@ class MainWindowController(BaseWindowController):
                 "Error evaluating visibility for view %s", desc.id
             )
             return False
+
+    def __add_handlers(self) -> None:
+        """
+        Register handlers related to this window.
+        """
+        HandlerRegistry.register("start_capture", StartCaptureHandler, self)
+        HandlerRegistry.register("stop_capture", StopCaptureHandler, self)
 
     def __connect_signals(self):
         """

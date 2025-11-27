@@ -19,3 +19,9 @@ class MainWindowView(BaseWindowView, Ui_MainWindow):
         :type parent: QtWidgets.QWidget
         """
         super().__init__(parent)
+        self.quick_actions.setVisible(False)
+        self.recorder_and_session.setVisible(False)
+        self.replay_watch.setVisible(False)
+        self.pipeline_queue.setVisible(False)
+        self.recent_outputs.setVisible(False)
+        self.system_health.setVisible(False)
