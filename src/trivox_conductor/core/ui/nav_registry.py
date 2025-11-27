@@ -28,8 +28,8 @@ class ViewRegistry:
     """
     Simple in-memory registry for ViewDescriptor instances.
 
-    This is intentionally *not* an EndpointRegistry because we are storing
-    data objects (descriptors), not endpoint classes.
+    This is intentionally *not* an ImplementationRegistry because we are storing
+    data objects (descriptors), not implementation classes.
     """
 
     _views: Dict[str, ViewDescriptor] = {}

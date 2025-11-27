@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Optional, Type
 
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.contracts.ai import AIBrainAdapter
 
 
-class AIRegistry(EndpointRegistry[AIBrainAdapter]):
-    endpoint_base: type = AIBrainAdapter
+class AIRegistry(ImplementationRegistry[AIBrainAdapter]):
+    implementation_base: type = AIBrainAdapter
     _active: Optional[str] = None
     _active_instance: Optional[AIBrainAdapter] = None  # cache
 
@@ -31,5 +33,7 @@ class AIRegistry(EndpointRegistry[AIBrainAdapter]):
         if cls._active_instance is None:
             cls._active_instance = cls.instantiate(
                 cls._active
-            )  # from EndpointRegistry
+            )  # from ImplementationRegistry
+        return cls._active_instance
+            )  # from ImplementationRegistry
         return cls._active_instance

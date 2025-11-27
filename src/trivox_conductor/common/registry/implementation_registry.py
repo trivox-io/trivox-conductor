@@ -1,5 +1,5 @@
 """
-Typed, safe, and subclass-isolated endpoint registry.
+Typed, safe, and subclass-isolated implementation registry.
 """
 
 from __future__ import annotations
@@ -21,23 +21,23 @@ from typing import (
 
 T = TypeVar(
     "T"
-)  # endpoint implementation type (classes deriving from endpoint_base)
+)  # implementation type (classes deriving from implementation_base)
 
 
-class EndpointRegistry(Generic[T]):
+class ImplementationRegistry(Generic[T]):
     """
-    A registry of *classes* implementing a specific endpoint interface.
+    A registry of *classes* implementing a specific interface.
 
-    Subclasses **must** set `endpoint_base` to the ABC (or base class) that all
-    endpoint implementations derive from.
+    Subclasses **must** set `implementation_base` to the ABC (or base class) that all
+    implementations derive from.
 
-    :cvar endpoint_base: ClassVar[type]: The base class for registered endpoints.
+    :cvar implementation_base: ClassVar[type]: The base class for registered implementations.
     :cvar _registry: ClassVar[MutableMapping[str, Type[T]]]: Mapping of names to
         implementation classes.
     :cvar _lock: ClassVar[threading.RLock]: Lock for thread-safe
     """
 
-    endpoint_base: ClassVar[type] = ABC  # override in subclasses
+    implementation_base: ClassVar[type] = ABC  # override in subclasses
     _registry: ClassVar[MutableMapping[str, Type[T]]]
     _lock: ClassVar[threading.RLock]
 
@@ -55,7 +55,7 @@ class EndpointRegistry(Generic[T]):
         cls, name: str, impl_class: Type[T], *, replace: bool = False
     ):
         """
-        Register an endpoint implementation class.
+        Register an implementation implementation class.
 
         :param name: Name to register the implementation under.
         :type name: str
@@ -66,12 +66,12 @@ class EndpointRegistry(Generic[T]):
         :param replace: Whether to replace an existing registration.
         :type replace: bool
 
-        :raises TypeError: If `impl_class` does not subclass `endpoint_base`.
+        :raises TypeError: If `impl_class` does not subclass `implementation_base`.
         :raises KeyError: If `name` is already registered and `replace` is False
         """
-        if not issubclass(impl_class, cls.endpoint_base):
+        if not issubclass(impl_class, cls.implementation_base):
             raise TypeError(
-                f"{impl_class.__qualname__} must subclass {cls.endpoint_base.__qualname__}"
+                f"{impl_class.__qualname__} must subclass {cls.implementation_base.__qualname__}"
             )
         with cls._lock:
             if not replace and name in cls._registry:
@@ -81,7 +81,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def unregister(cls, name: str):
         """
-        Unregister an endpoint implementation by name.
+        Unregister an implementation implementation by name.
 
         :param name: Name of the implementation to unregister.
         :type name: str
@@ -90,11 +90,11 @@ class EndpointRegistry(Generic[T]):
             cls._registry.pop(name, None)
 
     @classmethod
-    def endpoint(
+    def implementation(
         cls, name: Optional[str] = None, *, replace: bool = False
     ) -> Callable[[Type[T]], Type[T]]:
         """
-        Decorator to register an endpoint implementation class.
+        Decorator to register an implementation implementation class.
 
         :param name: Name to register the implementation under.
         :type name: Optional[str]
@@ -116,7 +116,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def get(cls, name: str) -> Type[T]:
         """
-        Get the endpoint implementation class by name.
+        Get the implementation implementation class by name.
 
         :param name: Name of the implementation to retrieve.
         :type name: str
@@ -129,12 +129,12 @@ class EndpointRegistry(Generic[T]):
         try:
             return cls._registry[name]
         except KeyError as e:
-            raise KeyError(f"Unknown endpoint '{name}'") from e
+            raise KeyError(f"Unknown implementation '{name}'") from e
 
     @classmethod
     def try_get(cls, name: str) -> Optional[Type[T]]:
         """
-        Try to get the endpoint implementation class by name.
+        Try to get the implementation implementation class by name.
 
         :param name: Name of the implementation to retrieve.
         :type name: str
@@ -147,7 +147,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def contains(cls, name: str) -> bool:
         """
-        Check if an endpoint implementation is registered by name.
+        Check if an implementation implementation is registered by name.
 
         :param name: Name of the implementation to check.
         :type name: str
@@ -160,7 +160,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def all(cls) -> Mapping[str, Type[T]]:
         """
-        Get a mapping of all registered endpoint implementations.
+        Get a mapping of all registered implementation implementations.
 
         :return: Mapping of names to implementation classes.
         :rtype: Mapping[str, Type[T]]
@@ -170,7 +170,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def names(cls) -> list[str]:
         """
-        Get a list of all registered endpoint implementation names.
+        Get a list of all registered implementation implementation names.
 
         :return: List of implementation names.
         :rtype: list[str]
@@ -180,7 +180,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def find_contains(cls, needle: str) -> list[Type[T]]:
         """
-        Find all endpoint implementations whose names
+        Find all implementation implementations whose names
         contain the given substring (case-insensitive).
 
         :param needle: Substring to search for.
@@ -197,7 +197,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def find_regex(cls, pattern: str) -> list[Type[T]]:
         """
-        Find all endpoint implementations whose names
+        Find all implementation implementations whose names
         match the given regex pattern (case-insensitive).
 
         :param pattern: Regex pattern to search for.
@@ -212,7 +212,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def instantiate(cls, name: str, *args, **kwargs) -> T:
         """
-        Instantiate an endpoint implementation by name.
+        Instantiate an implementation implementation by name.
 
         :param name: Name of the implementation to instantiate.
         :type name: str
@@ -226,7 +226,7 @@ class EndpointRegistry(Generic[T]):
     @classmethod
     def clear(cls):
         """
-        Clear all registered endpoint implementations.
+        Clear all registered implementation implementations.
         """
         with cls._lock:
             cls._registry.clear()

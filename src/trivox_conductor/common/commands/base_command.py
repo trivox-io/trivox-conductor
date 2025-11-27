@@ -17,9 +17,9 @@ class BaseCommand(ABC):
     """
     Base class for all commands.
 
-    Registration is done via the endpoint decorator:
+    Registration is done via the implementation decorator:
 
-        @CommandRegistry.endpoint("build")
+        @CommandRegistry.implementation("build")
         class Build(BaseCommand): ...
 
     or:
@@ -38,7 +38,7 @@ class BaseCommand(ABC):
     :cvar abstract: bool: If True, the command is not registered (base class
     """
 
-    # Metadata read by CommandRegistry.endpoint(...)
+    # Metadata read by CommandRegistry.implementation(...)
     name: Optional[str] = None
     aliases: Tuple[str, ...] = ()
     summary: Optional[str] = None
@@ -80,8 +80,8 @@ class BaseCommand(ABC):
         raise NotImplementedError
 
 
-# Bind the endpoint_base now that BaseCommand exists (avoids circular import issues)
-CommandRegistry.endpoint_base = BaseCommand
+# Bind the implementation_base now that BaseCommand exists (avoids circular import issues)
+CommandRegistry.implementation_base = BaseCommand
 
 
 # Optional: keep your old ergonomic helper
@@ -114,11 +114,13 @@ def register_command(
             or getattr(impl_cls, "name", None)
             or impl_cls.__name__.lower()
         )
-        # set attributes so CommandRegistry.endpoint can pick them up if desired
+        # set attributes so CommandRegistry.implementation can pick them up if desired
         if name is not None:
             impl_cls.name = resolved
         if aliases:
             impl_cls.aliases = aliases
-        return CommandRegistry.endpoint(resolved, replace=replace)(impl_cls)
+        return CommandRegistry.implementation(resolved, replace=replace)(
+            impl_cls
+        )
 
     return deco

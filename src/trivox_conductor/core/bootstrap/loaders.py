@@ -16,7 +16,9 @@ from trivox_conductor.common.dynamic_loader.utils import (
     iter_subpackages,
 )
 from trivox_conductor.common.logger import logger
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.registry import ROLE_REGISTRIES
 from trivox_conductor.core.registry.base_loader import (
     import_adapter_from_descriptor,
@@ -75,7 +77,7 @@ class PluginsLoader(BaseLoader):
                 d, pkg_root="trivox_conductor"
             )
             name = clazz.__name__.lower()
-            reg: EndpointRegistry = ROLE_REGISTRIES.get(d.role)
+            reg: ImplementationRegistry = ROLE_REGISTRIES.get(d.role)
             if not reg:
                 logger.warning("plugins: unknown role '%s' for %s", d.role, d)
                 continue

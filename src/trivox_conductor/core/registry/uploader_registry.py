@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Optional, Type
 
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.contracts.uploader import UploaderAdapter
 
 
-class UploaderRegistry(EndpointRegistry[UploaderAdapter]):
-    endpoint_base: type = UploaderAdapter
+class UploaderRegistry(ImplementationRegistry[UploaderAdapter]):
+    implementation_base: type = UploaderAdapter
     _active: Optional[str] = None
     _active_instance: Optional[UploaderAdapter] = None  # cache
 
@@ -31,5 +33,7 @@ class UploaderRegistry(EndpointRegistry[UploaderAdapter]):
         if cls._active_instance is None:
             cls._active_instance = cls.instantiate(
                 cls._active
-            )  # from EndpointRegistry
+            )  # from ImplementationRegistry
+        return cls._active_instance
+            )  # from ImplementationRegistry
         return cls._active_instance

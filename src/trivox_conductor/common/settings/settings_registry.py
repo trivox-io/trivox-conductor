@@ -7,20 +7,20 @@ from __future__ import annotations
 
 from typing import Callable, Optional, Union
 
-from trivox_conductor.common.registry import EndpointRegistry
+from trivox_conductor.common.registry import ImplementationRegistry
 
 from .base_settings import BaseSettings
 
 JSONScalar = Union[str, int, float, bool]
 
 
-class SettingRegistry(EndpointRegistry[BaseSettings]):
+class SettingRegistry(ImplementationRegistry[BaseSettings]):
     """Registry that stores *classes* derived from BaseSettings."""
 
-    endpoint_base = BaseSettings
+    implementation_base = BaseSettings
 
     @classmethod
-    def endpoint(
+    def implementation(
         cls, name: Optional[str] = None, *, replace: bool = False
     ) -> Callable[[type[BaseSettings]], type[BaseSettings]]:
         """
@@ -68,4 +68,4 @@ def register_setting(
     :return: Decorator that registers the settings class.
     :rtype: Callable[[type[BaseSettings]], type[BaseSettings]]
     """
-    return SettingRegistry.endpoint(name, replace=replace)
+    return SettingRegistry.implementation(name, replace=replace)

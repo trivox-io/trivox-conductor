@@ -1,5 +1,5 @@
 """
-Core registry module for managing endpoint role registrations.
+Core registry module for managing implementation role registrations.
 """
 
 from __future__ import annotations

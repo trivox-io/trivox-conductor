@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Optional, Type
 
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.registry.role_registries import (
     register_role_registry,
 )
@@ -10,16 +12,16 @@ from trivox_conductor.core.registry.role_registries import (
 from .contracts import CaptureAdapter
 
 
-class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
+class CaptureRegistry(ImplementationRegistry[CaptureAdapter]):
     """
     Registry for CaptureAdapter implementations.
 
-    :cvar endpoint_base (type): Base class for registered endpoints.
+    :cvar implementation_base (type): Base class for registered endpoints.
     :cvar _active_adapter (Optional[str]): Name of the currently active adapter.
     :cvar _active_instance (Optional[CaptureAdapter]): Cached instance of the active adapter.
     """
 
-    endpoint_base: type = CaptureAdapter
+    implementation_base: type = CaptureAdapter
     _active_adapter: Optional[str] = None
     _active_instance: Optional[CaptureAdapter] = None  # cached instance
 
@@ -63,7 +65,7 @@ class CaptureRegistry(EndpointRegistry[CaptureAdapter]):
         if cls._active_instance is None:
             cls._active_instance = cls.instantiate(
                 cls._active_adapter
-            )  # from EndpointRegistry
+            )  # from ImplementationRegistry
         return cls._active_instance
 
 

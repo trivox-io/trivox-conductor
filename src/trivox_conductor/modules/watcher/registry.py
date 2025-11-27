@@ -6,7 +6,9 @@ from __future__ import annotations
 
 from typing import Optional, Type
 
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.registry.role_registries import (
     register_role_registry,
 )
@@ -14,8 +16,8 @@ from trivox_conductor.core.registry.role_registries import (
 from .contracts import WatcherAdapter
 
 
-class WatcherRegistry(EndpointRegistry[WatcherAdapter]):
-    endpoint_base: type = WatcherAdapter
+class WatcherRegistry(ImplementationRegistry[WatcherAdapter]):
+    implementation_base: type = WatcherAdapter
     _active: Optional[str] = None
     _active_instance: Optional[WatcherAdapter] = None  # cache
 
@@ -39,7 +41,7 @@ class WatcherRegistry(EndpointRegistry[WatcherAdapter]):
         if cls._active_instance is None:
             cls._active_instance = cls.instantiate(
                 cls._active
-            )  # from EndpointRegistry
+            )  # from ImplementationRegistry
         return cls._active_instance
 
 

@@ -14,24 +14,24 @@ from typing import (
     Type,
 )
 
-from trivox_conductor.common.registry import EndpointRegistry
+from trivox_conductor.common.registry import ImplementationRegistry
 
 if TYPE_CHECKING:
     from .base_command import BaseCommand
 
 
-class CommandRegistry(EndpointRegistry["BaseCommand"]):
+class CommandRegistry(ImplementationRegistry["BaseCommand"]):
     """
     Registry for command classes (stores classes, not instances).
-    Adds alias resolution on top of EndpointRegistry.
+    Adds alias resolution on top of ImplementationRegistry.
 
-    :cvar endpoint_base: ClassVar[type]: The base class for registered commands.
+    :cvar implementation_base: ClassVar[type]: The base class for registered commands.
     :cvar _alias_map: ClassVar[MutableMapping[str, str]]: Mapping of aliases to
         primary command names.
     """
 
     # set by BaseCommand after class is defined to avoid import cycles
-    endpoint_base: ClassVar[
+    implementation_base: ClassVar[
         type
     ]  # = BaseCommand  (assigned in base_command.py)
 
@@ -97,7 +97,7 @@ class CommandRegistry(EndpointRegistry["BaseCommand"]):
                 cls._alias_map[a] = name
 
     @classmethod
-    def endpoint(
+    def implementation(
         cls,
         name: Optional[str] = None,
         *,

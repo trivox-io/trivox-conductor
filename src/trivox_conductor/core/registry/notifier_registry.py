@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Optional, Type
 
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.core.contracts.notifier import NotifierAdapter
 
 
-class NotifierRegistry(EndpointRegistry[NotifierAdapter]):
-    endpoint_base: type = NotifierAdapter
+class NotifierRegistry(ImplementationRegistry[NotifierAdapter]):
+    implementation_base: type = NotifierAdapter
     _active: Optional[str] = None
     _active_instance: Optional[NotifierAdapter] = None  # cache
 
@@ -31,5 +33,7 @@ class NotifierRegistry(EndpointRegistry[NotifierAdapter]):
         if cls._active_instance is None:
             cls._active_instance = cls.instantiate(
                 cls._active
-            )  # from EndpointRegistry
+            )  # from ImplementationRegistry
+        return cls._active_instance
+            )  # from ImplementationRegistry
         return cls._active_instance

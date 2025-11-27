@@ -12,7 +12,9 @@ import trivox_conductor.constants as trivox_constants
 from trivox_conductor.common.dynamic_loader import DynamicLoader
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.logging import resolve_log_levels, setup_logging
-from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
+from trivox_conductor.common.registry.implementation_registry import (
+    ImplementationRegistry,
+)
 from trivox_conductor.common.settings import settings
 from trivox_conductor.common.settings.base_settings import BaseSettings
 from trivox_conductor.common.settings.settings_registry import register_setting
@@ -70,7 +72,7 @@ def load_local_plugins(pkg_root: Optional[str] = "trivox_conductor"):
         clazz = import_adapter_from_descriptor(descriptor, pkg_root=pkg_root)
         name = clazz.__name__.lower()
 
-        registry: EndpointRegistry = ROLE_REGISTRIES.get(descriptor.role)
+        registry: ImplementationRegistry = ROLE_REGISTRIES.get(descriptor.role)
         if not registry:
             logger.warning(
                 "Unknown plugin role '%s' for %s", descriptor.role, descriptor
@@ -123,5 +125,7 @@ def initialize(verbose_level: Optional[int] = None) -> None:
     logger.info("Trivox Conductor application started.")
 
 
+if __name__ == "__main__":
+    initialize()
 if __name__ == "__main__":
     initialize()
