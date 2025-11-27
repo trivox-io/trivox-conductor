@@ -1,11 +1,14 @@
 from typing import Any, Optional
 from venv import logger
 
+from trivox_conductor.core.observers.bootstrap import attach_all_observers
+from trivox_conductor.core.observers.observer_base import ObserverContext
 from trivox_conductor.core.session.session_manager import SessionManager
 from trivox_conductor.core.trivox_context import (
     ContextBuilder,
     ContextBuilderData,
     TrivoxContext,
+    trivox_context,
 )
 from trivox_conductor.ui.common.controllers_mediator import ControllersMediator
 
@@ -39,6 +42,13 @@ class BaseWindowController(ControllersMediator):
         self._context = ContextBuilder.build_context(data)
         logger.debug(f"Profile: {self._context.profile}")
         logger.debug(f"Overrides: {self._context.overrides}")
+        ctx = ObserverContext(
+            session_id=trivox_context.session.id,
+            profile=trivox_context.profile,
+            profile_overrides=trivox_context.overrides,
+        )
+
+        attach_all_observers(ctx)
 
     def show(self):
         """
