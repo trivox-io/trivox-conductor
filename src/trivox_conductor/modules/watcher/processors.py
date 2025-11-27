@@ -3,8 +3,8 @@ from trivox_conductor.common.base_processor import (
 )
 from trivox_conductor.common.logger import logger
 from trivox_conductor.common.settings import settings
-from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 
+from .registry import WatcherRegistry
 from .services import WatcherService
 
 

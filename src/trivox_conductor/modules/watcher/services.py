@@ -4,13 +4,13 @@ from dataclasses import asdict
 from typing import Any, Dict, Mapping, Optional
 
 from trivox_conductor.common.logger import logger
-from trivox_conductor.core.contracts.watcher import WatcherAdapter
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.events.bus import BUS
-from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
 from trivox_conductor.core.services.base_service import BaseService
 
+from .contracts import WatcherAdapter
 from .correlate import SessionCorrelator
+from .registry import WatcherRegistry
 from .settings import WatcherSettingsModel
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from .base_contract import Adapter
+from trivox_conductor.core.contracts.base_contract import Adapter
 
 
 class WatcherAdapter(Adapter):

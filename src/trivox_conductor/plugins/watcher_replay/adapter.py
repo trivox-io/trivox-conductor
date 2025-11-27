@@ -6,9 +6,9 @@ from typing import Dict, Optional, Set, Tuple
 
 from trivox_conductor.common.logger import logger
 from trivox_conductor.core.contracts.base_contract import AdapterMeta
-from trivox_conductor.core.contracts.watcher import WatcherAdapter
 from trivox_conductor.core.events import topics
 from trivox_conductor.core.events.bus import BUS
+from trivox_conductor.modules.watcher.contracts import WatcherAdapter
 
 
 class ReplayWatcherAdapter(WatcherAdapter):

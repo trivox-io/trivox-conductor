@@ -15,7 +15,7 @@ from trivox_conductor.core.profiles.profile_models import (
     Adapter,
     PipelineProfile,
 )
-from trivox_conductor.core.registry.watcher_registry import WatcherRegistry
+from trivox_conductor.modules.watcher.registry import WatcherRegistry
 from trivox_conductor.modules.watcher.services import WatcherService
 
 

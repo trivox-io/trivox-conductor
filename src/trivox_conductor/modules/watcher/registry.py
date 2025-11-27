@@ -7,9 +7,11 @@ from __future__ import annotations
 from typing import Optional, Type
 
 from trivox_conductor.common.registry.endpoint_registry import EndpointRegistry
-from trivox_conductor.core.contracts.watcher import WatcherAdapter
+from trivox_conductor.core.registry.role_registries import (
+    register_role_registry,
+)
 
-from .role_registries import register_role_registry
+from .contracts import WatcherAdapter
 
 
 class WatcherRegistry(EndpointRegistry[WatcherAdapter]):
